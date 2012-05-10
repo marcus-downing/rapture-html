@@ -1,4 +1,4 @@
-package rapture.html5
+package rapture.html
 
 // This is a mess.
 trait HtmlDefs { this : Html5 =>

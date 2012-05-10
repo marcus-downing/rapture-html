@@ -1,4 +1,4 @@
-package rapture.html5
+package rapture.html
 
 // Implementation of draft spec from about 2009. Not up to date.
 class Html5 extends ElementClasses with HtmlDefs with AttributeClasses with Serialization {

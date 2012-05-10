@@ -1,4 +1,4 @@
-package rapture.html5
+package rapture.html
 
 trait Serialization { this : Html5 =>
 
