@@ -47,4 +47,17 @@ trait AttributeClasses { this : Html5 =>
   trait CommandAttributes extends AttributeType
   trait BbAttributes extends AttributeType
   trait MenuAttributes extends AttributeType
+
+  trait GlobalAttributes extends HtmlAttributes with BaseAttributes with LinkAttributes with
+      MetaAttributes with StyleAttributes with ScriptAttributes with BodyAttributes with
+      BlockquoteAttributes with OlAttributes with LiAttributes with AAttributes with QAttributes
+      with TimeAttributes with ProgressAttributes with MeterAttributes with BdoAttributes with
+      EditAttributes with ImgAttributes with IframeAttributes with EmbedAttributes with
+      ObjectAttributes with ParamAttributes with VideoAttributes with AudioAttributes with
+      SourceAttributes with CanvasAttributes with MapAttributes with AreaAttributes with
+      ColAttributes with TdAttributes with ThAttributes with FormAttributes with FieldsetAttributes
+      with LabelAttributes with InputAttributes with ButtonAttributes with SelectAttributes with
+      OptgroupAttributes with OptionAttributes with TextareaAttributes with OutputAttributes with
+      DetailsAttributes with CommandAttributes with BbAttributes with MenuAttributes
+
 }

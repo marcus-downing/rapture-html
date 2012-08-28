@@ -3,9 +3,9 @@ package rapture.html
 // Implementation of draft spec from about 2009. Not up to date.
 class Html5 extends ElementClasses with HtmlDefs with AttributeClasses with Serialization {
 
-  val id = new AttributeKey[Symbol, AttributeType]("id")
+  val id = new AttributeKey[Symbol, GlobalAttributes]("id")
   
-  val lang = new AttributeKey[String, AttributeType]("lang")
+  val lang = new AttributeKey[String, GlobalAttributes]("lang")
   
   val translate = new AttributeKey[String, AttributeType]("translate")
   
@@ -19,7 +19,7 @@ class Html5 extends ElementClasses with HtmlDefs with AttributeClasses with Seri
   
   val head = new Tag[Metadata, Top, AttributeType]("head")
   
-  val title = new Tag[Text, Metadata, AttributeType]("title") with
+  val title = new Tag[Text, Metadata, GlobalAttributes]("title") with
       BaseAttributeKey[String, AttributeType] { val key = "title" }
   
   val base = new Tag[Nothing, Metadata, BaseAttributes]("base")
@@ -44,12 +44,14 @@ class Html5 extends ElementClasses with HtmlDefs with AttributeClasses with Seri
       ScriptAttributes with AAttributes with EmbedAttributes with ObjectAttributes with
       SourceAttributes with AreaAttributes with InputAttributes with ButtonAttributes with
       CommandAttributes with BbAttributes with MenuAttributes]("type")
-  
+ 
+  val scriptType = new AttributeKey[String, ScriptAttributes]("type")
+
   val typ = `type`
   
   val sizes = new AttributeKey[String, LinkAttributes]("sizes")
   
-  val meta = new Tag[Metadata, Metadata, LinkAttributes]("meta")
+  val meta = new Tag[Metadata, Metadata, MetaAttributes]("meta")
   
   val name = new AttributeKey[String, MetaAttributes with IframeAttributes with ObjectAttributes
       with ParamAttributes with MapAttributes with FormAttributes with FieldsetAttributes with
@@ -62,7 +64,7 @@ class Html5 extends ElementClasses with HtmlDefs with AttributeClasses with Seri
   
   val charset = new AttributeKey[String, MetaAttributes with ScriptAttributes]("charset")
   
-  val style = new Tag[Text, Metadata with Flow, StyleAttributes]("style") with
+  val style = new Tag[Text, Metadata with Flow, GlobalAttributes]("style") with
       BaseAttributeKey[String, AttributeType] { val key = "style" }
   
   val scoped = new AttributeKey[String, StyleAttributes]("scoped")
@@ -223,7 +225,7 @@ class Html5 extends ElementClasses with HtmlDefs with AttributeClasses with Seri
   
   val bdo = new Tag[Phrasing, Phrasing, BdoAttributes]("bdo")
   
-  val dir = new AttributeKey[String, AttributeType]("dir")
+  val dir = new AttributeKey[String, GlobalAttributes]("dir")
   
   val ruby = new Tag[Phrasing, Phrasing, AttributeType]("ruby")
   
@@ -447,3 +449,5 @@ class Html5 extends ElementClasses with HtmlDefs with AttributeClasses with Seri
   val reset = new TypeOption { def typeName = "reset" }
 
 }
+
+object Html5 extends Html5
