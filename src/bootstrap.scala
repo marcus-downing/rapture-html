@@ -1,0 +1,67 @@
+package rapture.html
+
+import rapture.io._
+
+object Layout {
+
+  trait PageMetadata { page: Page =>
+    override def metas: List[Html5.Element[Html5.Metadata]] =
+      (metaData.toList map { case (k, v) => Html5.meta(Html5.name -> k, Html5.content -> v)() }) :::
+          page.metas
+    
+    def metaData: Map[String, String] = Map(
+      "description" -> metaDescription,
+      "keywords" -> metaKeywords.mkString(","),
+      "author" -> metaAuthor
+    )
+
+    def metaDescription: String
+    def metaKeywords: List[String]
+    def metaAuthor: String
+  }
+
+  trait JQuery { page: Page =>
+
+    def jQueryLocation : HttpUrl = Http / "ajax.googleapis.com" / "ajax" / "libs" / "jquery" / "1.7.2" / "jquery.min.js"
+
+    abstract override def scripts: List[Html5.Element[Html5.Metadata]] =
+      Html5.script(Html5.scriptType -> "text/javascript", Html5.src -> jQueryLocation.toString, defer) :: page.scripts
+  }
+
+  abstract class Page { page =>
+    
+    def doctype = "<doctype html>"
+
+    def lang: String = "en"
+    def title: String
+
+    def links: List[Html5.Element[Html5.Metadata]] = Nil
+    def scripts: List[Html5.Element[Html5.Metadata]] = Nil
+    def styles: List[Html5.Element[Html5.Metadata]] = Nil
+    def metas: List[Html5.Element[Html5.Metadata]] = Nil
+
+    def head =
+      Html5.title(page.title) :: styles.reverse ::: links.reverse ::: scripts.reverse ::: metas
+
+    def body: List[Html5.Element[Html5.Flow]] = List(
+      Html5.div(Html5.lang -> "lang")
+    )
+
+    def apply() = {
+      Html5.html(Html5.lang -> page.lang)(
+        Html5.head(page.head: _*),
+        Html5.body(page.body: _*)
+      )
+    }
+  }
+
+  trait Bootstrap { page: Page =>
+    
+    def bootstrapLocation = Http / "twitter.github.com" / "bootstrap" / "1.4.0" / "bootstrap.min.css"
+
+    abstract override def links: List[Html5.Element[Html5.Metadata]] =
+      Html5.link(Html5.rel -> "stylesheet", Html5.href -> bootstrapLocation.toString)() :: page.links
+
+  }
+
+}
