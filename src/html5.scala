@@ -352,7 +352,8 @@ class Html5 extends ElementClasses with HtmlDefs with AttributeClasses with Seri
       BaseAttributeKey[String, OptionAttributes with CommandAttributes with MenuAttributes] {
       val key = "label" }
   
-  val `for` = new AttributeKey[String, FieldsetAttributes with OutputAttributes]("for")
+  val `for` = new AttributeKey[String, FieldsetAttributes with OutputAttributes with
+      LabelAttributes]("for")
   
   val input = new Tag[Nothing, Phrasing with Interactive, InputAttributes]("input")
   
@@ -361,8 +362,9 @@ class Html5 extends ElementClasses with HtmlDefs with AttributeClasses with Seri
   val autofocus = new AttributeKey[Boolean, InputAttributes with ButtonAttributes with
       SelectAttributes with TextareaAttributes]("autofocus")
   
-  val checked = new AttributeKey[Boolean, InputAttributes with CommandAttributes]("checked")
-  
+  //val checked = new AttributeKey[Boolean, InputAttributes with CommandAttributes]("checked")
+  val checked = new Attribute[InputAttributes]("checked", "")
+
   val list = new AttributeKey[String, InputAttributes]("list")
   
   val maxlength = new AttributeKey[Int, InputAttributes with TextareaAttributes]("maxlength")
@@ -425,7 +427,7 @@ class Html5 extends ElementClasses with HtmlDefs with AttributeClasses with Seri
   
   val div = new Tag[Flow, Flow, AttributeType]("div")
  
-  trait TypeOption { def typeName : String }
+  trait TypeOption { def typeName : String; override def toString = typeName }
   val hidden = new TypeOption { def typeName = "hidden" }
   val text = new TypeOption { def typeName = "text" }
   val tel = new TypeOption { def typeName = "tel" }
