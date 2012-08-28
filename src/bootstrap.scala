@@ -20,17 +20,17 @@ object Layout {
     def metaAuthor: String
   }
 
-  trait JQuery { page: Page =>
+  trait JQuery extends Page {
 
     def jQueryLocation : HttpUrl = Http / "ajax.googleapis.com" / "ajax" / "libs" / "jquery" / "1.7.2" / "jquery.min.js"
 
-    abstract override def scripts: List[Html5.Element[Html5.Metadata]] =
-      Html5.script(Html5.scriptType -> "text/javascript", Html5.src -> jQueryLocation.toString, Html5.defer) :: page.scripts
+    override def scripts: List[Html5.Element[Html5.Metadata]] =
+      Html5.script(Html5.scriptType -> "text/javascript", Html5.src -> jQueryLocation.toString, Html5.defer) :: super.scripts
   }
 
   abstract class Page { page =>
     
-    def doctype = "<doctype html>"
+    def doctype = "<!DOCTYPE html>"
 
     def lang: String = "en"
     def title: String
@@ -47,20 +47,28 @@ object Layout {
       Html5.div(Html5.lang -> "lang")
     )
 
-    def apply() = {
+    def document = {
       Html5.html(Html5.lang -> page.lang)(
         Html5.head(page.head: _*),
         Html5.body(page.body: _*)
       )
     }
+
+    def stream: Input[Char] = {
+      val sb = new StringBuilder
+      sb.append(doctype)
+      sb.append(document.toString)
+      // FIXME: StringCharReader specified explicitly to work around compiler bug
+      sb.toString.input[Char](StringCharReader)
+    }
   }
 
-  trait Bootstrap { page: Page =>
+  trait Bootstrap extends Page {
     
     def bootstrapLocation = Http / "twitter.github.com" / "bootstrap" / "1.4.0" / "bootstrap.min.css"
 
-    abstract override def links: List[Html5.Element[Html5.Metadata]] =
-      Html5.link(Html5.rel -> "stylesheet", Html5.href -> bootstrapLocation.toString)() :: page.links
+    override def links: List[Html5.Element[Html5.Metadata]] =
+      Html5.link(Html5.rel -> "stylesheet", Html5.href -> bootstrapLocation.toString)() :: super.links
 
   }
 
