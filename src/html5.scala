@@ -75,9 +75,9 @@ class Html5 extends ElementClasses with HtmlDefs with AttributeClasses with Seri
       EmbedAttributes with VideoAttributes with AudioAttributes with SourceAttributes with
       InputAttributes]("src")
   
-  val async = new AttributeKey[String, ScriptAttributes]("async")
+  val async = new AttributeKey[String, ScriptAttributes]("async") -> "async"
   
-  val defer = new AttributeKey[String, ScriptAttributes]("defer")
+  val defer = new AttributeKey[String, ScriptAttributes]("defer") -> "defer"
   
   val noscript = new Tag[Text, Metadata with Phrasing, AttributeType]("noscript")
   
