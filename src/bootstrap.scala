@@ -43,9 +43,7 @@ object Layout {
     def head =
       Html5.title(page.title) :: styles.reverse ::: links.reverse ::: scripts.reverse ::: metas
 
-    def body: List[Html5.Element[Html5.Flow]] = List(
-      Html5.div(Html5.lang -> "lang")
-    )
+    def body: List[Html5.Element[Html5.Flow]]
 
     def document = {
       Html5.html(Html5.lang -> page.lang)(

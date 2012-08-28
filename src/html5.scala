@@ -9,7 +9,7 @@ class Html5 extends ElementClasses with HtmlDefs with AttributeClasses with Seri
   
   val translate = new AttributeKey[String, AttributeType]("translate")
   
-  val `class` = new AttributeKey[String, AttributeType]("class")
+  val `class` = new AttributeKey[String, GlobalAttributes]("class")
   
   val cls = `class`
   
@@ -333,7 +333,10 @@ class Html5 extends ElementClasses with HtmlDefs with AttributeClasses with Seri
   val action = new AttributeKey[String, FormAttributes with InputAttributes with ButtonAttributes](
       "action")
   
-  val autocomplete = new AttributeKey[Boolean, FormAttributes with InputAttributes]("autocomplete")
+  val autocomplete = new BooleanAttributeKey[FormAttributes with InputAttributes]("autocomplete") {
+    override def trueValue = "on"
+    override def falseValue = "off"
+  }
   
   val enctype = new AttributeKey[String, FormAttributes with InputAttributes with ButtonAttributes](
       "enctype")

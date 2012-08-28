@@ -3,16 +3,27 @@ package rapture.html
 // This is a mess.
 trait HtmlDefs { this : Html5 =>
 
+  class Stringable[T](val string: T => String)
+  implicit val stringStringable = new Stringable[String](_.toString)
+  implicit val symbolStringable = new Stringable[Symbol](_.name)
+  implicit val booleanStringable = new Stringable[Boolean](v => if(v) "on" else "off")
+  implicit val typeStringable = new Stringable[TypeOption](_.toString)
+
   trait AttributeType
   class Attribute[+AttributeType](val key : String, val value : String)
   
   trait BaseAttributeKey[T, +U <: AttributeType] {
     def key : String
-    def ->(value : T) : Attribute[U] = new Attribute[U](key, value.toString)
+    def ->(value : T)(implicit e: Stringable[T]): Attribute[U] = new Attribute[U](key, e.string(value))
   }
 
   class AttributeKey[T, +U <: AttributeType](k : String) extends BaseAttributeKey[T, U] {
     val key = k
+  }
+
+  abstract class BooleanAttributeKey[+U <: AttributeType](k : String) extends AttributeKey[Boolean, U](k) {
+    def trueValue: String
+    def falseValue: String
   }
 
   trait Element[+ElementType] {
