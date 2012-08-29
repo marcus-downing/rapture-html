@@ -1,8 +1,5 @@
 Bundle-Classpath: .
 Bundle-Name: Rapture HTML Libraries
 Bundle-Version: 0.6.0
-Bundle-SymbolicName: rapture-html
-Export-Package: rapture.io
-Import-Package: scala,scala.collection,scala.collection.generic,scala.collectio
- n.immutable,scala.collection.mutable,scala.reflect,scala.runtime,scala.util.pa
- rsing.json,scala.xml,scala.xml.factory,javax.crypto.spec,scala.math
+Bundle-SymbolicName: html
+Export-Package: rapture.html

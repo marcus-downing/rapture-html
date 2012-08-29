@@ -19,7 +19,7 @@ class Html5 extends ElementClasses with HtmlDefs with AttributeClasses with Seri
   
   val head = new Tag[Metadata, Top, AttributeType]("head")
   
-  val title = new Tag[Text, Metadata, GlobalAttributes]("title") with
+  val title = new Tag[Text, Metadata, GlobalAttributes]("title", block = false) with
       BaseAttributeKey[String, AttributeType] { val key = "title" }
   
   val base = new Tag[Nothing, Metadata, BaseAttributes]("base")
@@ -69,7 +69,7 @@ class Html5 extends ElementClasses with HtmlDefs with AttributeClasses with Seri
   
   val scoped = new AttributeKey[String, StyleAttributes]("scoped")
   
-  val script = new Tag[Text, Metadata with Phrasing, ScriptAttributes]("script")
+  val script = new Tag[Text, Metadata with Phrasing, ScriptAttributes]("script", hardClose = true)
   
   val src = new AttributeKey[String, ScriptAttributes with ImgAttributes with IframeAttributes with
       EmbedAttributes with VideoAttributes with AudioAttributes with SourceAttributes with
@@ -163,7 +163,7 @@ class Html5 extends ElementClasses with HtmlDefs with AttributeClasses with Seri
   
   val dd = new Tag[Flow, Definitions, AttributeType]("dd")
   
-  def a[T <: ElementType] = new TransparentTag[T, AAttributes]("a")
+  def a[T <: ElementType] = new TransparentTag[T, AAttributes]("a", block = false)
   
   val ping = new AttributeKey[String, AAttributes with AreaAttributes]("ping")
   
@@ -174,15 +174,15 @@ class Html5 extends ElementClasses with HtmlDefs with AttributeClasses with Seri
   
   val em = new Tag[Phrasing, Phrasing, AttributeType]("em", block = false)
   
-  val strong = new Tag[Phrasing, Phrasing, AttributeType]("strong")
+  val strong = new Tag[Phrasing, Phrasing, AttributeType]("strong", block = false)
   
-  val small = new Tag[Phrasing, Phrasing, AttributeType]("small")
+  val small = new Tag[Phrasing, Phrasing, AttributeType]("small", block = false)
   
   val mark = new Tag[Phrasing, Phrasing, AttributeType]("mark")
   
   val dfn = new Tag[Phrasing, Phrasing, AttributeType]("dfn")
   
-  val abbr = new Tag[Phrasing, Phrasing, AttributeType]("abbr")
+  val abbr = new Tag[Phrasing, Phrasing, AttributeType]("abbr", block = false)
   
   val time = new Tag[Phrasing, Phrasing, TimeAttributes]("time") with TypeOption { def typeName =
       "time" }
@@ -212,16 +212,16 @@ class Html5 extends ElementClasses with HtmlDefs with AttributeClasses with Seri
   
   val kbd = new Tag[Phrasing, Phrasing, AttributeType]("kbd")
   
-  val sup = new Tag[Phrasing, Phrasing, AttributeType]("sup")
+  val sup = new Tag[Phrasing, Phrasing, AttributeType]("sup", block = false)
   
-  val sub = new Tag[Phrasing, Phrasing, AttributeType]("sub")
+  val sub = new Tag[Phrasing, Phrasing, AttributeType]("sub", block = false)
   
-  val span = new Tag[Phrasing, Phrasing, AttributeType]("span") with BaseAttributeKey[Int,
+  val span = new Tag[Phrasing, Phrasing, AttributeType]("span", block = false) with BaseAttributeKey[Int,
       ColAttributes] { val key = "span" }
   
-  val i = new Tag[Phrasing, Phrasing, AttributeType]("i")
+  val i = new Tag[Phrasing, Phrasing, AttributeType]("i", block = false)
   
-  val b = new Tag[Phrasing, Phrasing, AttributeType]("b")
+  val b = new Tag[Phrasing, Phrasing, AttributeType]("b", block = false)
   
   val bdo = new Tag[Phrasing, Phrasing, BdoAttributes]("bdo")
   

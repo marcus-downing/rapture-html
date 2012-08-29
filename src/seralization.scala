@@ -1,9 +1,9 @@
 package rapture.html
 
-trait Serialization { this : Html5 =>
+trait Serialization { this: Html5 =>
 
-  def doSerialize(block : Boolean, name : String, attributes : Map[String, String],
-      body : List[Element[_]], sb : StringBuilder, n : Int, indent : Boolean) =
+  def doSerialize(block: Boolean, name: String, attributes: Map[String, String],
+      body: List[Element[_]], sb: StringBuilder, n: Int, indent: Boolean, hardClose: Boolean) =
     if(block) {
       if(!indent) sb.append("\n")
       sb.append("  "*n)
@@ -20,7 +20,11 @@ trait Serialization { this : Html5 =>
       }
       body.toList match {
         case Nil =>
-          sb.append("/>")
+          if(hardClose) {
+            sb.append("></")
+            sb.append(name)
+            sb.append(">")
+          } else sb.append("/>")
         case h :: t =>
           sb.append(">\n")
           h.serialize(sb, n + 1, true)

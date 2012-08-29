@@ -22,7 +22,7 @@ object Layout {
 
   trait JQuery extends Page {
 
-    def jQueryLocation : HttpUrl = Http / "ajax.googleapis.com" / "ajax" / "libs" / "jquery" / "1.7.2" / "jquery.min.js"
+    def jQueryLocation: HttpUrl = Http / "ajax.googleapis.com" / "ajax" / "libs" / "jquery" / "1.7.2" / "jquery.min.js"
 
     override def scripts: List[Html5.Element[Html5.Metadata]] =
       Html5.script(Html5.scriptType -> "text/javascript", Html5.src -> jQueryLocation.toString, Html5.defer) :: super.scripts
@@ -32,10 +32,13 @@ object Layout {
     
     def doctype = "<!DOCTYPE html>"
 
+    def stylesheets : List[Stylesheet] = Nil
+    case class Stylesheet(url: String)
+
     def lang: String = "en"
     def title: String
 
-    def links: List[Html5.Element[Html5.Metadata]] = Nil
+    def links: List[Html5.Element[Html5.Metadata]] = stylesheets map { ss => Html5.link(Html5.rel -> "stylesheet", Html5.href -> ss.url.toString)() }
     def scripts: List[Html5.Element[Html5.Metadata]] = Nil
     def styles: List[Html5.Element[Html5.Metadata]] = Nil
     def metas: List[Html5.Element[Html5.Metadata]] = Nil
@@ -45,12 +48,11 @@ object Layout {
 
     def body: List[Html5.Element[Html5.Flow]]
 
-    def document = {
+    def document =
       Html5.html(Html5.lang -> page.lang)(
         Html5.head(page.head: _*),
         Html5.body(page.body: _*)
       )
-    }
 
     def stream: Input[Char] = {
       val sb = new StringBuilder
