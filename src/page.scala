@@ -9,10 +9,10 @@ object Layout {
       (metaData.toList map { case (k, v) => Html5.meta(Html5.name -> k, Html5.content -> v)() }) :::
           page.metas
     
-    def metaData: Map[String, String] = Map(
-      "description" -> metaDescription,
-      "keywords" -> metaKeywords.mkString(","),
-      "author" -> metaAuthor
+    def metaData: Map[Symbol, String] = Map(
+      'description -> metaDescription,
+      'keywords -> metaKeywords.mkString(","),
+      'author -> metaAuthor
     )
 
     def metaDescription: String
@@ -29,16 +29,18 @@ object Layout {
   }
 
   abstract class Page { page =>
-    
+   
+    def httpStatus = 200
+
     def doctype = "<!DOCTYPE html>"
 
     def stylesheets : List[Stylesheet] = Nil
-    case class Stylesheet(url: String)
+    case class Stylesheet(url: Path)
 
     def lang: String = "en"
     def title: String
 
-    def links: List[Html5.Element[Html5.Metadata]] = stylesheets map { ss => Html5.link(Html5.rel -> "stylesheet", Html5.href -> ss.url.toString)() }
+    def links: List[Html5.Element[Html5.Metadata]] = stylesheets map { ss => Html5.link(Html5.rel -> "stylesheet", Html5.href -> ss.url)() }
     def scripts: List[Html5.Element[Html5.Metadata]] = Nil
     def styles: List[Html5.Element[Html5.Metadata]] = Nil
     def metas: List[Html5.Element[Html5.Metadata]] = Nil
@@ -68,7 +70,7 @@ object Layout {
     def bootstrapLocation = Http / "twitter.github.com" / "bootstrap" / "1.4.0" / "bootstrap.min.css"
 
     override def links: List[Html5.Element[Html5.Metadata]] =
-      Html5.link(Html5.rel -> "stylesheet", Html5.href -> bootstrapLocation.toString)() :: super.links
+      Html5.link(Html5.rel -> "stylesheet", Html5.href -> bootstrapLocation)() :: super.links
 
   }
 

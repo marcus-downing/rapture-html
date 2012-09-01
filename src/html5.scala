@@ -1,5 +1,7 @@
 package rapture.html
 
+import rapture.io._
+
 // Implementation of draft spec from about 2009. Not up to date.
 class Html5 extends ElementClasses with HtmlDefs with AttributeClasses with Serialization {
 
@@ -20,11 +22,11 @@ class Html5 extends ElementClasses with HtmlDefs with AttributeClasses with Seri
   val head = new Tag[Metadata, Top, AttributeType]("head")
   
   val title = new Tag[Text, Metadata, GlobalAttributes]("title", block = false) with
-      BaseAttributeKey[String, AttributeType] { val key = "title" }
+      BaseAttributeKey[String, GlobalAttributes] { val key = "title" }
   
   val base = new Tag[Nothing, Metadata, BaseAttributes]("base")
   
-  val href = new AttributeKey[String, BaseAttributes with LinkAttributes with AAttributes with
+  val href = new AttributeKey[Path, BaseAttributes with LinkAttributes with AAttributes with
       AreaAttributes]("href")
   
   val target = new AttributeKey[String, BaseAttributes with LinkAttributes with AAttributes with
@@ -53,7 +55,7 @@ class Html5 extends ElementClasses with HtmlDefs with AttributeClasses with Seri
   
   val meta = new Tag[Metadata, Metadata, MetaAttributes]("meta")
   
-  val name = new AttributeKey[String, MetaAttributes with IframeAttributes with ObjectAttributes
+  val name = new AttributeKey[Symbol, MetaAttributes with IframeAttributes with ObjectAttributes
       with ParamAttributes with MapAttributes with FormAttributes with FieldsetAttributes with
       InputAttributes with ButtonAttributes with SelectAttributes with TextareaAttributes with
       OutputAttributes]("name")
@@ -153,7 +155,7 @@ class Html5 extends ElementClasses with HtmlDefs with AttributeClasses with Seri
   
   val li = new Tag[Flow, ListItems, LiAttributes]("li")
   
-  val value = new AttributeKey[Double, LiAttributes with ProgressAttributes with MeterAttributes
+  val value = new AttributeKey[String, LiAttributes with ProgressAttributes with MeterAttributes
       with ParamAttributes with InputAttributes with ButtonAttributes with OptionAttributes](
       "value")
   
@@ -357,9 +359,11 @@ class Html5 extends ElementClasses with HtmlDefs with AttributeClasses with Seri
       BaseAttributeKey[String, OptionAttributes with CommandAttributes with MenuAttributes] {
       val key = "label" }
   
-  val `for` = new AttributeKey[String, FieldsetAttributes with OutputAttributes with
+  val `for` = new AttributeKey[Symbol, FieldsetAttributes with OutputAttributes with
       LabelAttributes]("for")
-  
+ 
+  val forName = `for`
+
   val input = new Tag[Nothing, Phrasing with Interactive, InputAttributes]("input")
   
   val accept = new AttributeKey[String, InputAttributes]("accept")
