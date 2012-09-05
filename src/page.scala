@@ -34,7 +34,7 @@ object Layout {
 
     def doctype = "<!DOCTYPE html>"
 
-    def stylesheets : List[Stylesheet] = Nil
+    def stylesheets: List[Stylesheet] = Nil
     case class Stylesheet(url: Path)
 
     def lang: String = "en"

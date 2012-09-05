@@ -436,7 +436,7 @@ class Html5 extends ElementClasses with HtmlDefs with AttributeClasses with Seri
   
   val div = new Tag[Flow, Flow, AttributeType]("div")
  
-  trait TypeOption { def typeName : String; override def toString = typeName }
+  trait TypeOption { def typeName: String; override def toString = typeName }
   val hidden = new TypeOption { def typeName = "hidden" }
   val text = new TypeOption { def typeName = "text" }
   val tel = new TypeOption { def typeName = "tel" }

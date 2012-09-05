@@ -1,6 +1,6 @@
 package rapture.html
 
-trait ElementClasses { this : Html5 =>
+trait ElementClasses { this: Html5 =>
 
   trait ElementType
   trait Flow extends ElementType

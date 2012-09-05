@@ -1,6 +1,6 @@
 package rapture.html
 
-trait AttributeClasses { this : Html5 =>
+trait AttributeClasses { this: Html5 =>
 
   trait HtmlAttributes extends AttributeType
   trait BaseAttributes extends AttributeType
