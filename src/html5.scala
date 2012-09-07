@@ -332,7 +332,7 @@ class Html5 extends ElementClasses with HtmlDefs with AttributeClasses with Seri
   
   val acceptCharset = new AttributeKey[String, FormAttributes]("accept-charset")
   
-  val action = new AttributeKey[String, FormAttributes with InputAttributes with ButtonAttributes](
+  val action = new AttributeKey[Path, FormAttributes with InputAttributes with ButtonAttributes](
       "action")
   
   val autocomplete = new BooleanAttributeKey[FormAttributes with InputAttributes]("autocomplete") {

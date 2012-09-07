@@ -1,5 +1,7 @@
 package rapture.html
 
+import language.implicitConversions
+
 // This is a mess.
 trait HtmlDefs { this: Html5 =>
 
