@@ -17,4 +17,6 @@ object Test extends App {
   val f2 = form(Map("myForm_firstName" -> "Jon", "myForm_lastName" -> "Pretty"))
   println(f2.view)
 
+  println(f2.lastName()(context))
+
 }

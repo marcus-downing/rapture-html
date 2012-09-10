@@ -5,8 +5,8 @@ import scala.collection.mutable.ListBuffer
 
 object Forms {
 
-  trait Context[Value, Out] {
-    def action(value: Option[String]): Out
+  trait Context[In, Out] {
+    def action(formField: Form#FormField[In, Widget]): Out
   }
 
   trait Widget
@@ -23,9 +23,9 @@ object Forms {
     def submitted(value: Option[String]): Boolean = value.isDefined
   }
 
-  implicit def context[Value](implicit parser: Parser[Value]): Context[Value, Value] =
-    new Context[Value, Value] {
-      def action(value: Option[String]): Value = parser.parse(value)
+  implicit def context[In]: Context[In, In] =
+    new Context[In, In] {
+      def action(formField: Form#FormField[In, Widget]): In = formField.value.get
     }
 
   case class Method(name: String)
@@ -84,24 +84,23 @@ object Forms {
         
     }
 
-
     class FormField[Value, +WidgetType <: Widget](val label: String, val name: Symbol)(implicit parser: Parser[Value], renderer: Renderer[Value, WidgetType]) {
       val fieldName: String = name.name
       def stringValue: Option[String] = params.get(formName+"_"+fieldName)
+      def submitted: Boolean = parser.submitted(stringValue)
       def value: Option[Value] = if(parser.submitted(stringValue)) Some(parser.parse(stringValue)) else None
       def render: Html5.Element[Html5.Flow] = renderer.render(this)
-      def apply[Value, Out]()(implicit n: Context[Value, Out]): Out =
-        n.action(stringValue)
+      def apply[Out]()(implicit n: Context[Value, Out]): Out =
+        n.action(this)
 
       formFields += this
     }
   }
 
   trait FormLayout extends Form {
-    implicit def renderContext[WidgetType](implicit widget: WidgetType): Context[WidgetType, Html5.Element[Html5.Flow]] =
-      new Context[WidgetType, Html5.Element[Html5.Flow]] {
-        type Out = Html5.Element[Html5.Flow]
-        def action(value: Option[String]): Html5.Element[Html5.Flow] = Html5.input
+    implicit def renderContext[In]: Context[In, Html5.Element[Html5.Flow]] =
+      new Context[In, Html5.Element[Html5.Flow]] {
+        def action(formField: Form#FormField[In, Widget]): Html5.Element[Html5.Flow] = formField.render
       }
     
     def view: Html5.Element[Html5.Flow]
