@@ -1,53 +1,107 @@
 package rapture.html
 
 import rapture.io._
-import scala.collection.mutable._
+import scala.collection.mutable.ListBuffer
 
 object Forms {
 
-  trait Context[T, Out] {
-    def action(value: String): Out
+  trait Context[Value, Out] {
+    def action(value: Option[String]): Out
   }
-  trait Widget[W] { def render(value: String): Html5.Element[Html5.Flow] }
-  trait Parser[T] { def parse(value: String): T }
 
-  implicit def context[T](implicit parser: Parser[T]): Context[T, T] =
-    new Context[T, T] {
-      def action(value: String): T = parser.parse(value)
+  trait Widget
+  class Dropdown extends Widget
+  class RadioList extends Widget
+  class Checkbox extends Widget
+  class StringInput extends Widget
+  class Textbox extends Widget
+  class HtmlEditor extends Widget
+
+  trait Parser[Value] {
+    def parse(value: Option[String]): Value
+    def serialize(value: Value): Option[String]
+    def submitted(value: Option[String]): Boolean = value.isDefined
+  }
+
+  implicit def context[Value](implicit parser: Parser[Value]): Context[Value, Value] =
+    new Context[Value, Value] {
+      def action(value: Option[String]): Value = parser.parse(value)
     }
 
   case class Method(name: String)
   val Get = Method("get")
   val Post = Method("post")
 
-  implicit val parser = new Parser[String] { def parse(s: String) = s }
+  implicit val StringParser = new Parser[String] {
+    def parse(s: Option[String]) = s.getOrElse("")
+    def serialize(s: String): Option[String] = Some(s)
+  }
+  
+  implicit val IntParser = new Parser[Int] {
+    def parse(s: Option[String]): Int = s.get.toInt
+    def serialize(value: Int) = Some(value.toString)
+  }
+
+  implicit val BooleanParser = new Parser[Boolean] {
+    def parse(s: Option[String]) = s.isDefined
+    def serialize(value: Boolean) = if(value) Some("") else None
+    override def submitted(value: Option[String]): Boolean = true
+  }
 
   abstract class Form(name: Symbol, params: Map[String, String] = Map(), val method: Method = Post,
       val action: Path = ^) {
 
-    protected val formFields: ListBuffer[Field[_]] = new ListBuffer[Field[_]]
+    protected val formFields: ListBuffer[FormField[_, Widget]] = new ListBuffer[FormField[_, Widget]]
     val formName = name.name
     def view: Html5.Element[Html5.Flow]
    
-    def formField[T, W](name: Symbol, label: String)(implicit parser: Parser[T],
-        renderer: Widget[W]): W
+    def formField[Value, WidgetType <: Widget](name: Symbol, label: String)(implicit parser: Parser[Value], renderer: Renderer[Value, WidgetType]): FormField[Value, WidgetType] =
+      new FormField[Value, WidgetType](label, name)
+      
+    trait Renderer[Value, WidgetType <: Widget] {
+      def render(field: FormField[Value, WidgetType]): Html5.Element[Html5.Flow]
+    }
 
-    abstract class Field[S](label: String, name: Symbol)(implicit parser: Parser[S]) {
+    implicit val StringRenderer = new Renderer[String, StringInput] {
+      def render(f: FormField[String, StringInput]): Html5.Element[Html5.Flow] =
+        Html5.input(f.value.map(Html5.value -> _), Html5.name -> f.name)
+        
+    }
+    
+    implicit val TextboxRenderer = new Renderer[String, Textbox] {
+      def render(f: FormField[String, Textbox]): Html5.Element[Html5.Flow] = {
+        import Html5._
+        textarea(Html5.name -> f.name)(f.value.getOrElse(""): String)
+      }
+        
+    }
+    
+    implicit val CheckboxRenderer = new Renderer[Boolean, Checkbox] {
+      def render(f: FormField[Boolean, Checkbox]): Html5.Element[Html5.Flow] = {
+        import Html5._
+        input(`type` -> checkbox, Html5.name -> f.name)
+      }
+        
+    }
+
+
+    class FormField[Value, +WidgetType <: Widget](val label: String, val name: Symbol)(implicit parser: Parser[Value], renderer: Renderer[Value, WidgetType]) {
       val fieldName: String = name.name
-      def value(params: Map[String, String]): S
-      def render: Html5.Element[Html5.Flow]
-      def apply[T, Out]()(implicit n: Context[T, Out]): Out =
-        n.action(params(formName+"_"+fieldName))
+      def stringValue: Option[String] = params.get(formName+"_"+fieldName)
+      def value: Option[Value] = if(parser.submitted(stringValue)) Some(parser.parse(stringValue)) else None
+      def render: Html5.Element[Html5.Flow] = renderer.render(this)
+      def apply[Value, Out]()(implicit n: Context[Value, Out]): Out =
+        n.action(stringValue)
 
       formFields += this
     }
   }
 
   trait FormLayout extends Form {
-    implicit def renderContext[W](implicit widget: Widget[W]): Context[Widget[W], Html5.Element[Html5.Flow]] =
-      new Context[Widget[W], Html5.Element[Html5.Flow]] {
+    implicit def renderContext[WidgetType](implicit widget: WidgetType): Context[WidgetType, Html5.Element[Html5.Flow]] =
+      new Context[WidgetType, Html5.Element[Html5.Flow]] {
         type Out = Html5.Element[Html5.Flow]
-        def action(value: String): Html5.Element[Html5.Flow] = widget.render(value)
+        def action(value: Option[String]): Html5.Element[Html5.Flow] = Html5.input
       }
     
     def view: Html5.Element[Html5.Flow]
@@ -63,22 +117,5 @@ object Forms {
       )
     )
   }
-
-  /*val testForm = new Form('testForm) with TabularLayout { form =>
-    val firstName = formField[String, Form#Field]('firstName, "First name")
-  
-    override def view = {
-      import Html5.{form => _, _}
-      Html5.form(Html5.action -> form.action)(
-        firstName()
-      )
-    }
-  }
-
-  implicit def textInput[W](implicit p: Parser[W]) = new Widget[W] {
-    def render(v: String) = Html5.input(Html5.value -> v)
-  }
-
-  val n: String = testForm.firstName()*/
 
 }

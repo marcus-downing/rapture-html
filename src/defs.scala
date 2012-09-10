@@ -48,14 +48,21 @@ trait HtmlDefs { this: Html5 =>
   }
 
   implicit def seqToElement[T](seq: Seq[Element[T]]) = new Element[T] {
-    override def serialize(sb: StringBuilder, n: Int, indent: Boolean) =
-      for(e <- seq) e.serialize(sb, n, indent)
+    override def serialize(sb: StringBuilder, n: Int, indent: Boolean) = {
+      for(e <- seq.init) {
+        e.serialize(sb, n, indent)
+        sb.append('\n')
+      }
+      seq.last.serialize(sb, n, indent)
+    }
   }
 
   implicit def optionToElement[T](opt: Option[Element[T]]) = new Element[T] {
     override def serialize(sb: StringBuilder, n: Int, indent: Boolean) =
-      for(e <- opt) e.serialize(sb, n, indent)
+      opt.foreach(_.serialize(sb, n, indent))
   }
+  
+  implicit def optionToAttribute[AT](opt: Option[Attribute[AT]]) = opt.getOrElse(null)
 
   implicit def tagToEmptyElement[T <: ElementType, S <: ElementType, Q <: AttributeType]
       (t: Tag[T, S, Q]): Element[S] = t.build(Nil, Nil)
@@ -82,7 +89,7 @@ trait HtmlDefs { this: Html5 =>
     def build(attributes: Seq[Attribute[AT]], body: Seq[Element[ChildType]]):
         Element[ThisType] = new Element[ThisType] {
       def serialize(sb: StringBuilder, n: Int, indent: Boolean) =
-        doSerialize(block, name, attributes map { a => (a.key, a.value) } toMap, body, sb, n,
+        doSerialize(block, name, attributes flatMap { a => if(a == null) None else Some(a.key -> a.value) } toMap, body, sb, n,
             indent, hardClose)
     }
   }
