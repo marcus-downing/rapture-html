@@ -54,17 +54,21 @@ object Forms {
     protected val formFields: ListBuffer[FormField[_, Widget]] = new ListBuffer[FormField[_, Widget]]
     val formName = name.name
     def view: Html5.Element[Html5.Flow]
-   
-    def formField[Value, WidgetType <: Widget](name: Symbol, label: String)(implicit parser: Parser[Value], renderer: Renderer[Value, WidgetType]): FormField[Value, WidgetType] =
-      new FormField[Value, WidgetType](label, name)
+  
+    def submitted = formFields.forall(_.submitted)
+
+    def save() = formFields.foreach(_.save())
+
+    def formField[Value, WidgetType <: Widget](name: Symbol, label: String, cell: Cell[Value] = nullCell[Value])(implicit parser: Parser[Value], renderer: Renderer[Value, WidgetType]): FormField[Value, WidgetType] =
+      new FormField[Value, WidgetType](label, name, cell)
       
     trait Renderer[Value, WidgetType <: Widget] {
       def render(field: FormField[Value, WidgetType]): Html5.Element[Html5.Flow]
     }
 
-    implicit val StringRenderer = new Renderer[String, StringInput] {
-      def render(f: FormField[String, StringInput]): Html5.Element[Html5.Flow] =
-        Html5.input(f.value.map(Html5.value -> _), Html5.name -> f.name)
+    implicit def stringRenderer[T] = new Renderer[T, StringInput] {
+      def render(f: FormField[T, StringInput]): Html5.Element[Html5.Flow] =
+        Html5.input(f.value map { v => Html5.value -> (if(v == null) "null" else v.toString) }, Html5.name -> f.name)
         
     }
     
@@ -79,19 +83,32 @@ object Forms {
     implicit val CheckboxRenderer = new Renderer[Boolean, Checkbox] {
       def render(f: FormField[Boolean, Checkbox]): Html5.Element[Html5.Flow] = {
         import Html5._
-        input(`type` -> checkbox, Html5.name -> f.name)
+        span(
+          input(`type` -> checkbox, Html5.name -> f.name),
+          " ",
+          f.label
+        )
+
       }
         
     }
 
-    class FormField[Value, +WidgetType <: Widget](val label: String, val name: Symbol)(implicit parser: Parser[Value], renderer: Renderer[Value, WidgetType]) {
+    private def nullCell[T] = new Cell[T] {
+      def apply(): T = null.asInstanceOf[T]
+      def update(t: T) = ()
+    }
+
+    class FormField[Value, +WidgetType <: Widget](val label: String, val name: Symbol, val cell: Cell[Value] = nullCell[Value])(implicit parser: Parser[Value], renderer: Renderer[Value, WidgetType]) {
       val fieldName: String = name.name
-      def stringValue: Option[String] = params.get(formName+"_"+fieldName)
-      def submitted: Boolean = parser.submitted(stringValue)
+      def paramValue: Option[String] = params.get(formName+"_"+fieldName)
+      def stringValue: Option[String] = paramValue orElse parser.serialize(cell())
+      def submitted: Boolean = parser.submitted(paramValue)
       def value: Option[Value] = if(parser.submitted(stringValue)) Some(parser.parse(stringValue)) else None
       def render: Html5.Element[Html5.Flow] = renderer.render(this)
       def apply[Out]()(implicit n: Context[Value, Out]): Out =
         n.action(this)
+
+      def save() = value foreach cell.update
 
       formFields += this
     }
@@ -111,10 +128,14 @@ object Forms {
     override def view = Html5.form(Html5.action -> action, Html5.method -> method.name)(
       Html5.table(
         Html5.tbody(
-          formFields map { f => Html5.tr(Html5.td(f.render)) }
+          formFields map { f =>
+            Html5.tr(
+              Html5.td(f.label),
+              Html5.td(f.render)
+            )
+          }
         )
       )
     )
   }
-
 }

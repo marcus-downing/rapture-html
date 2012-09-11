@@ -43,12 +43,12 @@ trait HtmlDefs { this: Html5 =>
   implicit def stringToElement(s: String) = new Element[Text] {
     override def serialize(sb: StringBuilder, n: Int, indent: Boolean) = {
       if(indent) sb.append("  "*n)
-      sb.append(s.replaceAll("&", "&amp;").replaceAll("<", "&lt;"))
+      sb.append((if(s == null) "null" else s).replaceAll("&", "&amp;").replaceAll("<", "&lt;"))
     }
   }
 
   implicit def seqToElement[T](seq: Seq[Element[T]]) = new Element[T] {
-    override def serialize(sb: StringBuilder, n: Int, indent: Boolean) = {
+    override def serialize(sb: StringBuilder, n: Int, indent: Boolean) = if(!seq.isEmpty) {
       for(e <- seq.init) {
         e.serialize(sb, n, indent)
         sb.append('\n')
