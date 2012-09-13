@@ -71,7 +71,7 @@ object Forms {
   }
 
   abstract class Form(name: Symbol, params: Map[String, String] = Map(), val method: Method = Post,
-      val action: Path = Self) {
+      val action: Path) {
 
     implicit def richFunction(fn: String => List[String]) = new {
       def &&(fn2: String => List[String]): String => List[String] =
