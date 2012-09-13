@@ -20,6 +20,15 @@ object Layout {
     def metaAuthor: String
   }
 
+  trait JQueryUi extends Page { this: JQuery =>
+    def jQueryUiLocation = Http / "ajax.googleapis.com" / "ajax" / "libs" / "jqueryui" / "1.8.23" /
+        "jquery-ui.min.js"
+    
+    override def scripts: List[Html5.Element[Html5.Metadata]] =
+      Html5.script(Html5.scriptType -> "text/javascript", Html5.src -> jQueryUiLocation.toString,
+          Html5.defer) :: super.scripts
+  }
+
   trait JQuery extends Page {
 
     def jQueryLocation: HttpUrl = Http / "ajax.googleapis.com" / "ajax" / "libs" / "jquery" / "1.7.2" / "jquery.min.js"

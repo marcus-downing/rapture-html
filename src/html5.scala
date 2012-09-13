@@ -406,7 +406,8 @@ class Html5 extends ElementClasses with HtmlDefs with AttributeClasses with Seri
   
   val selected = new AttributeKey[Boolean, OptionAttributes]("selected")
   
-  val textarea = new Tag[Text, Phrasing with Interactive, TextareaAttributes]("textarea")
+  val textarea = new Tag[Text, Phrasing with Interactive, TextareaAttributes]("textarea",
+      block = false)
   
   val cols = new AttributeKey[Int, TextareaAttributes]("cols")
   

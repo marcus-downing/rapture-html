@@ -7,7 +7,7 @@ object Test extends App {
   def form(map: Map[String, String] = Map()) = new Form('myForm, map) with TabularLayout {
     val firstName = formField[String, StringInput]('firstName, "First name")
     val lastName = formField[String, StringInput]('lastName, "Last name")
-    val address = formField[String, Textbox]('address, "Address")
+    val address = formField[String, TextArea]('address, "Address")
     val male = formField[Boolean, Checkbox]('male, "Are you male?")
   }
 

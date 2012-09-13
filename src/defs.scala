@@ -1,4 +1,5 @@
 package rapture.html
+import rapture.io.{log, Zone}
 
 import language.implicitConversions
 
@@ -7,6 +8,7 @@ trait HtmlDefs { this: Html5 =>
 
   class Stringable[T](val string: T => String)
   implicit val stringStringable = new Stringable[String](_.toString)
+  implicit val intStringable = new Stringable[Int](_.toString)
   implicit val symbolStringable = new Stringable[Symbol](_.name)
   implicit val booleanStringable = new Stringable[Boolean](v => if(v) "on" else "off")
   implicit val typeStringable = new Stringable[TypeOption](_.toString)
@@ -40,10 +42,10 @@ trait HtmlDefs { this: Html5 =>
     }
   }
 
-  implicit def stringToElement(s: String) = new Element[Text] {
+  implicit def stringableToElement[T](s: T)(implicit stringable: Stringable[T]) = new Element[Text] {
     override def serialize(sb: StringBuilder, n: Int, indent: Boolean) = {
       if(indent) sb.append("  "*n)
-      sb.append((if(s == null) "null" else s).replaceAll("&", "&amp;").replaceAll("<", "&lt;"))
+      sb.append((if(s == null) "null" else stringable.string(s)).replaceAll("&", "&amp;").replaceAll("<", "&lt;"))
     }
   }
 
@@ -76,6 +78,11 @@ trait HtmlDefs { this: Html5 =>
 
   implicit def convert[ThisType <: ElementType, ChildType <: ElementType]
       (f: AttributedElement[ThisType, ChildType]): Element[ThisType] = f(Nil: _*)
+
+  def illegalNest[T](e: Element[_]): Element[T] = new Element[T] {
+    override def serialize(sb: StringBuilder, n: Int, indent: Boolean) =
+      e.serialize(sb, n, indent)
+  }
 
   class Tag[ChildType <: ElementType, ThisType <: ElementType, AT <: AttributeType]
       (val name: String, block: Boolean = true, hardClose: Boolean = false) {

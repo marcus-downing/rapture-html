@@ -9,7 +9,7 @@ trait Serialization { this: Html5 =>
       sb.append("  "*n)
       sb.append("<")
       sb.append(name)
-      for((k, v) <- attributes) {
+      for((k, v) <- attributes if v != null) {
         sb.append(" ")
         sb.append(k)
         if(v != "") {
