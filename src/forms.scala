@@ -176,6 +176,7 @@ object Forms {
       formFields += this
     }
 
+    val validDateTime = { s: String => if(s.matches("[0-9][0-9]\\/[0-9][0-9]\\/[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9]")) Nil else List("Please enter a valid date, in the format DD/MM/YY hh:mm:ss.") }
     val notEmpty = { s: String => if(s.isEmpty) List("Value is required and can't be empty.") else Nil }
     val isSlug = { s: String => if(!s.matches("[a-z0-9]*")) List("Value can only contain lower-case alphanumeric characters.") else Nil }
     def notDuplicate(xs: List[String]) = { s: String => if(xs contains s) List("This value is not unique. Please choose something different.") else Nil }
