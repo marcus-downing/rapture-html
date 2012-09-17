@@ -372,7 +372,7 @@ class Html5 extends ElementClasses with HtmlDefs with AttributeClasses with Seri
       SelectAttributes with TextareaAttributes]("autofocus")
   
   //val checked = new AttributeKey[Boolean, InputAttributes with CommandAttributes]("checked")
-  val checked = new Attribute[InputAttributes]("checked", "")
+  val checked = new Attribute[InputAttributes]("checked", "checked")
 
   val list = new AttributeKey[String, InputAttributes]("list")
   
