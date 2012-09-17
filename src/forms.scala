@@ -176,7 +176,7 @@ object Forms {
       formFields += this
     }
 
-    val validPhoneNumber = { s: String => if(s.matches("""^[+\\- ()0-9]*$""")) Nil else List("Please enter a valid telephone number") }
+    val validPhoneNumber = { s: String => if(s.matches("""^[+\- ()0-9]*$""")) Nil else List("Please enter a valid telephone number") }
     val validEmailAddress = { s: String => if(s.matches("""^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$""")) Nil else List("Please enter a valid email address") }
     val optValidEmailAddress = { s: String => if(s.matches("""^([_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4}))?$""")) Nil else List("Please enter a valid email address") }
     val validDateTime = { s: String => if(s.matches("[0-9][0-9]\\/[0-9][0-9]\\/[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9]")) Nil else List("Please enter a valid date, in the format DD/MM/YY hh:mm:ss.") }
