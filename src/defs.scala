@@ -1,5 +1,5 @@
 package rapture.html
-import rapture.io.{log, Zone}
+import rapture.io.{log, Zone, Link}
 
 import language.implicitConversions
 
@@ -12,7 +12,7 @@ trait HtmlDefs { this: Html5 =>
   implicit val symbolStringable = new Stringable[Symbol](_.name)
   implicit val booleanStringable = new Stringable[Boolean](v => if(v) "on" else "off")
   implicit val typeStringable = new Stringable[TypeOption](_.toString)
-  implicit val pathStringable = new Stringable[rapture.io.Path](_.toString)
+  implicit val pathStringable = new Stringable[Link](_.toString)
 
   trait AttributeType
   class Attribute[+AttributeType](val key: String, val value: String)
@@ -47,6 +47,10 @@ trait HtmlDefs { this: Html5 =>
       if(indent) sb.append("  "*n)
       sb.append((if(s == null) "null" else stringable.string(s)).replaceAll("&", "&amp;").replaceAll("<", "&lt;"))
     }
+  }
+
+  def raw(s: String) = new Element[Text] {
+    override def serialize(sb: StringBuilder, n: Int, indent: Boolean) = sb.append(s)
   }
 
   implicit def seqToElement[T](seq: Seq[Element[T]]) = new Element[T] {

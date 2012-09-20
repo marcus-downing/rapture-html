@@ -26,7 +26,7 @@ class Html5 extends ElementClasses with HtmlDefs with AttributeClasses with Seri
   
   val base = new Tag[Nothing, Metadata, BaseAttributes]("base")
   
-  val href = new AttributeKey[Path, BaseAttributes with LinkAttributes with AAttributes with
+  val href = new AttributeKey[Link, BaseAttributes with LinkAttributes with AAttributes with
       AreaAttributes]("href")
   
   val target = new AttributeKey[String, BaseAttributes with LinkAttributes with AAttributes with
@@ -73,7 +73,7 @@ class Html5 extends ElementClasses with HtmlDefs with AttributeClasses with Seri
   
   val script = new Tag[Text, Metadata with Phrasing, ScriptAttributes]("script", hardClose = true)
   
-  val src = new AttributeKey[String, ScriptAttributes with ImgAttributes with IframeAttributes with
+  val src = new AttributeKey[Link, ScriptAttributes with ImgAttributes with IframeAttributes with
       EmbedAttributes with VideoAttributes with AudioAttributes with SourceAttributes with
       InputAttributes]("src")
   
@@ -332,7 +332,7 @@ class Html5 extends ElementClasses with HtmlDefs with AttributeClasses with Seri
   
   val acceptCharset = new AttributeKey[String, FormAttributes]("accept-charset")
   
-  val action = new AttributeKey[Path, FormAttributes with InputAttributes with ButtonAttributes](
+  val action = new AttributeKey[Link, FormAttributes with InputAttributes with ButtonAttributes](
       "action")
   
   val autocomplete = new BooleanAttributeKey[FormAttributes with InputAttributes]("autocomplete") {

@@ -20,6 +20,7 @@ object Forms {
   class StringInput extends Widget
   class TextArea extends Widget
   class HtmlEditor extends Widget
+  class HiddenField extends Widget
 
   trait Parser[Value] {
     def parse(value: Option[String]): Value
@@ -71,7 +72,7 @@ object Forms {
   }
 
   abstract class Form(name: Symbol, params: Map[String, String] = Map(), val method: Method = Post,
-      val action: Path) {
+      val action: Link) {
 
     implicit def richFunction(fn: String => List[String]) = new {
       def &&(fn2: String => List[String]): String => List[String] =
@@ -92,9 +93,18 @@ object Forms {
 
     def save() = formFields.foreach(_.save())
 
-    def formField[Value, WidgetType <: Widget](name: Symbol, label: String, cell: Cell[Value] = nullCell[Value], validate: String => List[String] = { s => Nil }, help: String = "")(implicit parser: Parser[Value], renderer: Renderer[Value, WidgetType]): FormField[Value, WidgetType] =
+    def formField[Value, WidgetType <: Widget](name: Symbol, label: String,
+        cell: Cell[Value] = nullCell[Value],
+        validate: String => List[String] = { s => Nil }, help: String = "")
+        (implicit parser: Parser[Value], renderer: Renderer[Value, WidgetType]):
+        FormField[Value, WidgetType] =
       new FormField[Value, WidgetType](label, name, cell, validate, help)
-      
+   
+    implicit def valueToCell[T](v: T) = new Cell[T] {
+      def apply() = v
+      def update(x: T) = ()
+    }
+
     trait Renderer[Value, WidgetType <: Widget] {
       def render(field: FormField[Value, WidgetType]): Html5.Element[Html5.Flow]
     }
@@ -120,6 +130,13 @@ object Forms {
           input(`type` -> checkbox, Html5.name -> f.name, if(f.value.getOrElse(false)) Some(Html5.checked) else None),
           " "
         )
+      }
+    }
+
+    implicit def hiddenRenderer[T] = new Renderer[T, HiddenField] {
+      def render(f: FormField[T, HiddenField]): Html5.Element[Html5.Flow] = {
+        import Html5._
+        input(`type` -> hidden, Html5.name -> f.name, value -> f.stringValue.getOrElse(""))
       }
     }
 
@@ -158,16 +175,22 @@ object Forms {
 
     class FormField[Value, +WidgetType <: Widget](val label: String, val name: Symbol, val cell: Cell[Value] = nullCell[Value], val validate: String => List[String] = { s => Nil }, val help: String = "")(implicit parser: Parser[Value], renderer: Renderer[Value, WidgetType]) {
       val fieldName: String = name.name
+
+      def logValue[T](n: String, v: T) = {
+        log.trace(fieldName+"."+n+" = "+v)
+        v
+      }
+
       
-      def validated: Boolean = validationIssues.isEmpty
+      def validated: Boolean = logValue("validated", validationIssues.isEmpty)
       lazy val validationIssues = stringValue.map(validate).getOrElse(Nil)
-      def paramValue: Option[String] = params.get(fieldName)
-      def stringValue: Option[String] = paramValue orElse parser.serialize(cell())
-      def submitted: Boolean = parser.submitted(paramValue)
-      def value: Option[Value] = if(parser.submitted(stringValue)) Some(parser.parse(stringValue)) else None
+      def paramValue: Option[String] = logValue("paramValue", params.get(fieldName))
+      def stringValue: Option[String] = logValue("stringValue", paramValue orElse parser.serialize(cell()))
+      def submitted: Boolean = logValue("submitted", parser.submitted(paramValue))
+      def value: Option[Value] = logValue("value", if(parser.submitted(stringValue)) Some(parser.parse(stringValue)) else None)
       def render: Html5.Element[Html5.Flow] = renderer.render(this)
       def apply[Out]()(implicit n: Context[Value, Out]): Out =
-        n.action(this)
+        logValue("apply", n.action(this))
 
       def save() = value foreach cell.update
 

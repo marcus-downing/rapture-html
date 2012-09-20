@@ -25,8 +25,7 @@ object Layout {
         "jquery-ui.min.js"
     
     override def scripts: List[Html5.Element[Html5.Metadata]] =
-      Html5.script(Html5.scriptType -> "text/javascript", Html5.src -> jQueryUiLocation.toString,
-          Html5.defer) :: super.scripts
+      Html5.script(Html5.scriptType -> "text/javascript", Html5.src -> jQueryUiLocation) :: super.scripts
   }
 
   trait JQuery extends Page {
@@ -34,7 +33,7 @@ object Layout {
     def jQueryLocation: HttpUrl = Http / "ajax.googleapis.com" / "ajax" / "libs" / "jquery" / "1.7.2" / "jquery.min.js"
 
     override def scripts: List[Html5.Element[Html5.Metadata]] =
-      Html5.script(Html5.scriptType -> "text/javascript", Html5.src -> jQueryLocation.toString, Html5.defer) :: super.scripts
+      Html5.script(Html5.scriptType -> "text/javascript", Html5.src -> jQueryLocation) :: super.scripts
   }
 
   abstract class Page { page =>
@@ -44,12 +43,12 @@ object Layout {
     def doctype = "<!DOCTYPE html>"
 
     def stylesheets: List[Stylesheet] = Nil
-    case class Stylesheet(url: Path)
+    case class Stylesheet(link: Link)
 
     def lang: String = "en"
     def title: String
 
-    def links: List[Html5.Element[Html5.Metadata]] = stylesheets map { ss => Html5.link(Html5.rel -> "stylesheet", Html5.href -> ss.url)() }
+    def links: List[Html5.Element[Html5.Metadata]] = stylesheets map { ss => Html5.link(Html5.rel -> "stylesheet", Html5.href -> ss.link)() }
     def scripts: List[Html5.Element[Html5.Metadata]] = Nil
     def styles: List[Html5.Element[Html5.Metadata]] = Nil
     def metas: List[Html5.Element[Html5.Metadata]] = Nil
