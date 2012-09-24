@@ -106,17 +106,17 @@ object Forms {
     }
 
     trait Renderer[Value, WidgetType <: Widget] {
-      def render(field: FormField[Value, WidgetType]): Html5.Element[Html5.Flow]
+      def render(field: FormField[Value, WidgetType]): Html5.Element[Html5.Phrasing]
     }
 
     implicit def stringRenderer[T] = new Renderer[T, StringInput] {
-      def render(f: FormField[T, StringInput]): Html5.Element[Html5.Flow] =
+      def render(f: FormField[T, StringInput]): Html5.Element[Html5.Phrasing] =
         Html5.input(f.value map { v => Html5.value -> (if(v == null) "null" else v.toString) }, Html5.name -> f.name)
         
     }
     
     implicit val TextAreaRenderer = new Renderer[String, TextArea] {
-      def render(f: FormField[String, TextArea]): Html5.Element[Html5.Flow] = {
+      def render(f: FormField[String, TextArea]): Html5.Element[Html5.Phrasing] = {
         import Html5._
         textarea(Html5.name -> f.name)(f.value.getOrElse(""): String)
       }
@@ -124,7 +124,7 @@ object Forms {
     }
     
     implicit val CheckboxRenderer = new Renderer[Boolean, Checkbox] {
-      def render(f: FormField[Boolean, Checkbox]): Html5.Element[Html5.Flow] = {
+      def render(f: FormField[Boolean, Checkbox]): Html5.Element[Html5.Phrasing] = {
         import Html5._
         span(
           input(`type` -> checkbox, Html5.name -> f.name, if(f.value.getOrElse(false)) Some(Html5.checked) else None),
@@ -134,21 +134,21 @@ object Forms {
     }
 
     implicit def hiddenRenderer[T] = new Renderer[T, HiddenField] {
-      def render(f: FormField[T, HiddenField]): Html5.Element[Html5.Flow] = {
+      def render(f: FormField[T, HiddenField]): Html5.Element[Html5.Phrasing] = {
         import Html5._
         input(`type` -> hidden, Html5.name -> f.name, value -> f.stringValue.getOrElse(""))
       }
     }
 
     implicit val DateTimeRenderer = new Renderer[DateTime, StringInput] {
-      def render(f: FormField[DateTime, StringInput]): Html5.Element[Html5.Flow] = {
+      def render(f: FormField[DateTime, StringInput]): Html5.Element[Html5.Phrasing] = {
         import Html5._
         input(`type` -> text, placeholder -> "DD/MM/YY hh:mm:ss", Html5.name -> f.name, value -> f.stringValue.getOrElse(""))
       }
     }
 
     implicit val DateRenderer = new Renderer[Date, StringInput] {
-      def render(f: FormField[Date, StringInput]): Html5.Element[Html5.Flow] = {
+      def render(f: FormField[Date, StringInput]): Html5.Element[Html5.Phrasing] = {
         import Html5._
         input(`type` -> text, placeholder -> "DD/MM/YY", Html5.name -> f.name, value -> f.stringValue.getOrElse(""))
       }
@@ -156,10 +156,10 @@ object Forms {
 
     def radioListRenderer[T](opts: List[(Int, T)], getString: T => String)(implicit parser: Parser[T]) =
       new Renderer[T, RadioList] {
-        def render(f: FormField[T, RadioList]): Html5.Element[Html5.Flow] = {
+        def render(f: FormField[T, RadioList]): Html5.Element[Html5.Phrasing] = {
           import Html5._
-          div(
-            opts flatMap { opt => List[Element[Flow]](
+          span(
+            opts flatMap { opt => List[Element[Phrasing]](
               input(Html5.name -> f.name, value -> opt._1.toString, `type` -> radio, if(f.stringValue.getOrElse("") == opt._1.toString) Some(checked) else None),
               " "+getString(opt._2),
               br
@@ -188,7 +188,7 @@ object Forms {
       def stringValue: Option[String] = logValue("stringValue", paramValue orElse parser.serialize(cell()))
       def submitted: Boolean = logValue("submitted", parser.submitted(paramValue))
       def value: Option[Value] = logValue("value", if(parser.submitted(stringValue)) Some(parser.parse(stringValue)) else None)
-      def render: Html5.Element[Html5.Flow] = renderer.render(this)
+      def render: Html5.Element[Html5.Phrasing] = renderer.render(this)
       def apply[Out]()(implicit n: Context[Value, Out]): Out =
         logValue("apply", n.action(this))
 
@@ -199,6 +199,7 @@ object Forms {
       formFields += this
     }
 
+    val validUrl = { s: String => if(s.matches("\\b(https?|ftp)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]")) Nil else List("Please enter a valid URL") }
     val validPhoneNumber = { s: String => if(s.matches("""^[+\- ()0-9]*$""")) Nil else List("Please enter a valid telephone number") }
     val validEmailAddress = { s: String => if(s.matches("""^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$""")) Nil else List("Please enter a valid email address") }
     val optValidEmailAddress = { s: String => if(s.matches("""^([_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4}))?$""")) Nil else List("Please enter a valid email address") }
@@ -209,9 +210,9 @@ object Forms {
   }
 
   trait FormLayout extends Form {
-    implicit def renderContext[In]: Context[In, Html5.Element[Html5.Flow]] =
-      new Context[In, Html5.Element[Html5.Flow]] {
-        def action(formField: Form#FormField[In, Widget]): Html5.Element[Html5.Flow] = formField.render
+    implicit def renderContext[In]: Context[In, Html5.Element[Html5.Phrasing]] =
+      new Context[In, Html5.Element[Html5.Phrasing]] {
+        def action(formField: Form#FormField[In, Widget]): Html5.Element[Html5.Phrasing] = formField.render
       }
     
     def view: Html5.Element[Html5.Flow]
@@ -220,11 +221,11 @@ object Forms {
   trait TabularLayout extends FormLayout {
     import Html5._
    
-    def submitButton: Element[Flow] = input(`type` -> submit, name -> Symbol("_submit"), value -> submitButtonText)
+    def submitButton: Element[Phrasing] = input(`type` -> submit, name -> Symbol("_submit"), value -> submitButtonText)
 
     def submitButtonText = "Save"
 
-    def submitRow(btn: Element[Flow]): Element[TrItems] = tr(
+    def submitRow(btn: Element[Phrasing]): Element[TrItems] = tr(
       td,
       td(btn)
     )
