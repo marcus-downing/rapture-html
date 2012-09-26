@@ -16,6 +16,7 @@ object Forms {
   trait Widget
   class Dropdown extends Widget
   class RadioList extends Widget
+  class Instruction extends Widget
   class Checkbox extends Widget
   class StringInput extends Widget
   class TextArea extends Widget
@@ -53,6 +54,12 @@ object Forms {
     override def submitted(value: Option[String]): Boolean = true
   }
 
+  implicit val NullParser = new Parser[Unit] {
+    def parse(s: Option[String]) = ()
+    def serialize(value: Unit) = None
+    override def submitted(value: Option[String]): Boolean = true
+  }
+
   implicit val DateParser = new Parser[Date] {
     def parse(string: Option[String]) = string map { s =>
       val ps = s.split("\\/").map(_.toInt)
@@ -72,7 +79,7 @@ object Forms {
   }
 
   abstract class Form(name: Symbol, params: Map[String, String] = Map(), val method: Method = Post,
-      val action: Link) {
+      val action: Link) { thisForm =>
 
     implicit def richFunction(fn: String => List[String]) = new {
       def &&(fn2: String => List[String]): String => List[String] =
@@ -83,7 +90,7 @@ object Forms {
     val formName = name.name
     def view: Html5.Element[Html5.Flow]
   
-    def submitted = formFields.forall(_.submitted) && params.contains("_submit")
+    def submitted = /*formFields.forall(_.submitted) && */params.contains("_submit")
 
     def validated = formFields.forall(_.validated)
 
@@ -92,6 +99,8 @@ object Forms {
     def complete = submitted && validated
 
     def save() = formFields.foreach(_.save())
+
+    def formInstruction(text: String) = formField[Unit, Instruction]('null, text)
 
     def formField[Value, WidgetType <: Widget](name: Symbol, label: String,
         cell: Cell[Value] = nullCell[Value],
@@ -114,6 +123,16 @@ object Forms {
         Html5.input(f.value map { v => Html5.value -> (if(v == null) "null" else v.toString) }, Html5.name -> f.name)
         
     }
+   
+    // FIXME: Find some way to ensure that TinyMCE is included in the page
+    implicit val HtmlEditorRenderer = new Renderer[String, HtmlEditor] {
+      def render(f: FormField[String, HtmlEditor]): Html5.Element[Html5.Phrasing] = {
+        import Html5._
+        textarea(Html5.name -> f.name, id -> f.name, cls -> "mceEditorCustom")(
+            f.value.getOrElse(""): String)
+      }
+        
+    }
     
     implicit val TextAreaRenderer = new Renderer[String, TextArea] {
       def render(f: FormField[String, TextArea]): Html5.Element[Html5.Phrasing] = {
@@ -128,7 +147,8 @@ object Forms {
         import Html5._
         span(
           input(`type` -> checkbox, Html5.name -> f.name, if(f.value.getOrElse(false)) Some(Html5.checked) else None),
-          " "
+          " ",
+          f.label
         )
       }
     }
@@ -168,6 +188,13 @@ object Forms {
         }
       }
 
+    implicit val nullRenderer = new Renderer[Unit, Instruction] {
+      def render(f: FormField[Unit, Instruction]): Html5.Element[Html5.Phrasing] = {
+        import Html5._
+        span
+      }
+    }
+
     private def nullCell[T] = new Cell[T] {
       def apply(): T = null.asInstanceOf[T]
       def update(t: T) = ()
@@ -185,7 +212,7 @@ object Forms {
       def validated: Boolean = logValue("validated", validationIssues.isEmpty)
       lazy val validationIssues = stringValue.map(validate).getOrElse(Nil)
       def paramValue: Option[String] = logValue("paramValue", params.get(fieldName))
-      def stringValue: Option[String] = logValue("stringValue", paramValue orElse parser.serialize(cell()))
+      def stringValue: Option[String] = logValue("stringValue", if(thisForm.submitted) paramValue else parser.serialize(cell()))
       def submitted: Boolean = logValue("submitted", parser.submitted(paramValue))
       def value: Option[Value] = logValue("value", if(parser.submitted(stringValue)) Some(parser.parse(stringValue)) else None)
       def render: Html5.Element[Html5.Phrasing] = renderer.render(this)
