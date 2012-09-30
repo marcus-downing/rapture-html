@@ -7,10 +7,6 @@ import rapture.orm.Time._
 
 object Forms extends Widgets with Parsers {
 
-  case class Method(name: String)
-  val Get = Method("get")
-  val Post = Method("post")
-
   class BasicForm(val name: Symbol, val params: Map[String, String] = Map()) { form =>
     
     type Field[T] <: BasicField[T]
@@ -112,7 +108,7 @@ object Forms extends Widgets with Parsers {
   }
 
   abstract class WebForm(name: Symbol, params: Map[String, String] = Map(),
-      val method: Method = Post, val action: Link = ^) extends BasicForm(name, params) with
+      val method: HttpMethods.FormMethod = HttpMethods.Post, val action: Link = ^) extends BasicForm(name, params) with
       RenderableForm with FieldLabels with Preprocessing with FormValidation with FormHelp {
 
     class Field[T](val name: Symbol, val label: String, val cell: Cell[T], val parser: Parser[T],
@@ -169,15 +165,19 @@ object Forms extends Widgets with Parsers {
     type FormPart = Element[TrItems]
     type RenderedForm = Element[Flow]
 
+    def hideLabels = false
+
     def wrap[T, F <: Field[T], W <: Widget[T]](field: F, widget: W)
         (implicit renderer: Renderer[T, F, W]): FormPart =
       tr(
-        td(field.label),
-        td(if(field.required) "*" else ""),
+        if(hideLabels) Nil else List(
+          td(field.label),
+          td(if(field.required) "*" else "")
+        ),
         td(renderer.render(field, widget))
       )
 
-    def render: RenderedForm = form(Html5.action -> action, Html5.method -> method.toString)(
+    def render: RenderedForm = form(Html5.action -> action, Html5.method -> method)(
       table(
         tbody(
           formParts.toList,
@@ -188,13 +188,13 @@ object Forms extends Widgets with Parsers {
    
     def submitButtonText = "Save"
 
-    def submitRow = tr(
+    def submitRow = if(hideLabels) tr(td(submitButton)) else tr(
       td,
       td,
       td(submitButton)
     )
 
-    def submitButton: Element[Phrasing] =
+    def submitButton: Element[Flow] =
       input(Html5.name -> Symbol(formName+"_submit"), value -> submitButtonText, `type` -> submit)
 
   }

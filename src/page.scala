@@ -4,6 +4,8 @@ import rapture.io._
 
 object Layout {
 
+  import MimeTypes._
+
   trait PageMetadata { page: Page =>
     override def metas: List[Html5.Element[Html5.Metadata]] =
       (metaData.toList map { case (k, v) => Html5.meta(Html5.name -> k, Html5.content -> v)() }) :::
@@ -25,7 +27,7 @@ object Layout {
         "jquery-ui.min.js"
     
     override def scripts: List[Html5.Element[Html5.Metadata]] =
-      Html5.script(Html5.scriptType -> "text/javascript", Html5.src -> jQueryUiLocation) :: super.scripts
+      Html5.script(Html5.scriptType -> `text/javascript`, Html5.src -> jQueryUiLocation) :: super.scripts
   }
 
   trait JQuery extends Page {
@@ -33,7 +35,7 @@ object Layout {
     def jQueryLocation: HttpUrl = Http / "ajax.googleapis.com" / "ajax" / "libs" / "jquery" / "1.7.2" / "jquery.min.js"
 
     override def scripts: List[Html5.Element[Html5.Metadata]] =
-      Html5.script(Html5.scriptType -> "text/javascript", Html5.src -> jQueryLocation) :: super.scripts
+      Html5.script(Html5.scriptType -> `text/javascript`, Html5.src -> jQueryLocation) :: super.scripts
   }
 
   abstract class Page { page =>
@@ -82,4 +84,24 @@ object Layout {
 
   }
 
+  import Forms._
+  import Html5._
+   
+  trait TinyMce extends Page {
+
+    def tinyMceLocation: Link
+
+    override def scripts: List[Html5.Element[Html5.Metadata]] =
+      Html5.script(Html5.scriptType -> `text/javascript`, Html5.src -> tinyMceLocation)() :: super.links
+ 
+  }
+  
+  trait TinyMceForm { this: WebForm =>
+    implicit val tinyMceEditorRenderer =
+      new Renderer[String, Field[String], HtmlEditor[String]] {
+        def render(f: Field[String], w: HtmlEditor[String]) =
+          textarea(style -> "width: 100%", Html5.name -> f.name, cls -> "mceEditorCustom")(raw(f.fieldValue))
+      }
+  }
+  
 }

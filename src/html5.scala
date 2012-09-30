@@ -47,7 +47,7 @@ class Html5 extends ElementClasses with HtmlDefs with AttributeClasses with Seri
       SourceAttributes with AreaAttributes with InputAttributes with ButtonAttributes with
       CommandAttributes with BbAttributes with MenuAttributes]("type")
  
-  val scriptType = new AttributeKey[String, ScriptAttributes]("type")
+  val scriptType = new AttributeKey[MimeTypes.MimeType, ScriptAttributes]("type")
 
   val typ = `type`
   
@@ -67,7 +67,7 @@ class Html5 extends ElementClasses with HtmlDefs with AttributeClasses with Seri
   val charset = new AttributeKey[String, MetaAttributes with ScriptAttributes]("charset")
   
   val style = new Tag[Text, Metadata with Flow, GlobalAttributes]("style") with
-      BaseAttributeKey[String, AttributeType] { val key = "style" }
+      BaseAttributeKey[String, GlobalAttributes] { val key = "style" }
   
   val scoped = new AttributeKey[String, StyleAttributes]("scoped")
   
@@ -343,7 +343,7 @@ class Html5 extends ElementClasses with HtmlDefs with AttributeClasses with Seri
   val enctype = new AttributeKey[String, FormAttributes with InputAttributes with ButtonAttributes](
       "enctype")
   
-  val method = new AttributeKey[String, FormAttributes with InputAttributes with ButtonAttributes](
+  val method = new AttributeKey[HttpMethods.FormMethod, FormAttributes with InputAttributes with ButtonAttributes](
       "method")
   
   val novalidate = new AttributeKey[Boolean, FormAttributes with InputAttributes with

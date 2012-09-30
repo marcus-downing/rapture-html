@@ -1,5 +1,5 @@
 package rapture.html
-import rapture.io.{log, Zone, Link}
+import rapture.io.{log, Zone, Link, HttpMethods, MimeTypes}
 
 import language.implicitConversions
 
@@ -13,6 +13,8 @@ trait HtmlDefs { this: Html5 =>
   implicit val booleanStringable = new Stringable[Boolean](v => if(v) "on" else "off")
   implicit val typeStringable = new Stringable[TypeOption](_.toString)
   implicit val pathStringable = new Stringable[Link](_.toString)
+  implicit val methodStringable = new Stringable[HttpMethods.FormMethod](_.toString.toLowerCase)
+  implicit val mimeTypeStringable = new Stringable[MimeTypes.MimeType](_.name)
 
   trait AttributeType
   class Attribute[+AttributeType](val key: String, val value: String)
