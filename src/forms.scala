@@ -123,10 +123,10 @@ object Forms extends Widgets with Parsers {
       def validator = validate
     }
 
-    def field[T](name: Symbol, label: String, cell: Cell[T] = null,
+    def field[T: Parser](name: Symbol, label: String, cell: Cell[T] = null,
         process: (String => String) = identity[String], validate: String => List[String] = { s =>
-        Nil }, required: Boolean = false, help: String = "")(implicit parser: Parser[T]) =
-      new Field[T](name, label, cell, parser, process, validate, required, help)
+        Nil }, required: Boolean = false, help: String = "") =
+      new Field[T](name, label, cell, implicitly[Parser[T]], process, validate, required, help)
     
     import Html5._
 

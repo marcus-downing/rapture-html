@@ -42,10 +42,10 @@ trait HtmlDefs { this: Html5 =>
     }
   }
 
-  implicit def stringableToElement[T](s: T)(implicit stringable: Stringable[T]) = new Element[Text] {
+  implicit def stringableToElement[T: Stringable](s: T) = new Element[Text] {
     override def serialize(sb: StringBuilder, n: Int, indent: Boolean) = {
       if(indent) sb.append("  "*n)
-      sb.append((if(s == null) "null" else stringable.string(s)).replaceAll("&", "&amp;").replaceAll("<", "&lt;"))
+      sb.append((if(s == null) "null" else implicitly[Stringable[T]].string(s)).replaceAll("&", "&amp;").replaceAll("<", "&lt;"))
     }
   }
 
