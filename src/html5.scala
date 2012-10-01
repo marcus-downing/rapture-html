@@ -458,6 +458,10 @@ class Html5 extends ElementClasses with HtmlDefs with AttributeClasses with Seri
   val image = new TypeOption { def typeName = "image" }
   val reset = new TypeOption { def typeName = "reset" }
 
+
+  // Not sure if these should be here
+  val onclick = new AttributeKey[String, GlobalAttributes]("onclick")
+
 }
 
 object Html5 extends Html5
