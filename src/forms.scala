@@ -52,15 +52,34 @@ object Forms extends Widgets with Parsers {
       def validator: String => List[String]
       def required: Boolean
     }
-  
-    val validUrl = { s: String => if(s.matches("\\b(https?|ftp)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]")) Nil else List("Please enter a valid URL") }
-    val validPhoneNumber = { s: String => if(s.matches("""^[+\- ()0-9]*$""")) Nil else List("Please enter a valid telephone number") }
-    val validEmailAddress = { s: String => if(s.matches("""^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$""")) Nil else List("Please enter a valid email address") }
-    val optValidEmailAddress = { s: String => if(s.matches("""^([_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4}))?$""")) Nil else List("Please enter a valid email address") }
-    val validDateTime = { s: String => if(s.matches("[0-9][0-9]\\/[0-9][0-9]\\/[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9]")) Nil else List("Please enter a valid date, in the format DD/MM/YY hh:mm:ss.") }
-    val notEmpty = { s: String => if(s.isEmpty) List("Value is required and can't be empty.") else Nil }
-    val isSlug = { s: String => if(!s.matches("[a-z0-9]*")) List("Value can only contain lower-case alphanumeric characters.") else Nil }
-    def notDuplicate(xs: List[String]) = { s: String => if(xs contains s) List("This value is not unique. Please choose something different.") else Nil }
+ 
+    // String validators
+
+    val validUrl = { s: String => if(s.matches("\\b(https?|ftp)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a"+
+        "-zA-Z0-9+&@#/%=~_|]")) Nil else List("Please enter a valid URL") }
+
+    val validPhoneNumber = { s: String => if(s.matches("""^[+\- ()0-9]*$""")) Nil else List("Pleas"+
+        "e enter a valid telephone number") }
+    
+    val validEmailAddress = { s: String => if(s.matches("""^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+"+
+        "(\.[a-z0-9-]+)*(\.[a-z]{2,4})$""")) Nil else List("Please enter a valid email address") }
+    
+    val optValidEmailAddress = { s: String => if(s.matches("""^([_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-"+
+        "9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4}))?$""")) Nil else List("Please enter a valid email addre"+
+        "ss") }
+    
+    val validDateTime = { s: String => if(s.matches("[0-9][0-9]\\/[0-9][0-9]\\/[0-9][0-9] [0-9][0-"+
+        "9]:[0-9][0-9]:[0-9][0-9]")) Nil else List("Please enter a valid date, in the format DD/MM"+
+        "/YY hh:mm:ss.") }
+    
+    val notEmpty = { s: String => if(s.isEmpty) List("Value is required and can't be empty.") else
+        Nil }
+    
+    val isSlug = { s: String => if(!s.matches("[a-z0-9]*")) List("Value can only contain lower-cas"+
+        "e alphanumeric characters.") else Nil }
+    
+    def notDuplicate(xs: List[String]) = { s: String => if(xs contains s) List("This value is not "+
+        "unique. Please choose something different.") else Nil }
   
   }
 
@@ -88,14 +107,16 @@ object Forms extends Widgets with Parsers {
 
     val formParts = new ListBuffer[FormPart]
 
-    def wrap[T, F <: Field[T], W <: Widget[T]](field: F, widget: W)(implicit renderer: Renderer[T, F, W]): FormPart
+    def wrap[T, F <: Field[T], W <: Widget[T]](field: F, widget: W)(implicit renderer:
+        Renderer[T, F, W]): FormPart
     def content(fp: FormPart) = formParts += fp
 
     def render: RenderedForm
 
     // asInstanceOf[F] is here as an indirect consequence of compiler bug SI-6443
     trait RenderableField[T] { this: Field[T] =>
-      def as[F <: Field[T], W <: Widget[T]](w: W)(implicit renderer: Renderer[T, F, W]): this.type = {
+      def as[F <: Field[T], W <: Widget[T]](w: W)(implicit renderer: Renderer[T, F, W]):
+          this.type = {
         formParts += wrap[T, F, W](this.asInstanceOf[F], w)(renderer)
         fields += this
         this
@@ -108,8 +129,9 @@ object Forms extends Widgets with Parsers {
   }
 
   abstract class WebForm(name: Symbol, params: Map[String, String] = Map(),
-      val method: HttpMethods.FormMethod = HttpMethods.Post, val action: Link = ^) extends BasicForm(name, params) with
-      RenderableForm with FieldLabels with Preprocessing with FormValidation with FormHelp {
+      val method: HttpMethods.FormMethod = HttpMethods.Post, val action: Link = ^) extends
+      BasicForm(name, params) with RenderableForm with FieldLabels with Preprocessing with
+      FormValidation with FormHelp {
 
     class Field[T](val name: Symbol, val label: String, val cell: Cell[T], val parser: Parser[T],
         process: String => String, validate: String => List[String], val required: Boolean,
@@ -149,7 +171,8 @@ object Forms extends Widgets with Parsers {
         span(style -> "display: inline-block")(
           w.options flatMap { opt => List(
             span(
-              input(`type` -> radio, Html5.name -> f.name, value -> w.id(opt)),
+              input(`type` -> radio, Html5.name -> f.name, value -> w.id(opt),
+                  if(w.id(opt) == f.fieldValue) Some(checked) else None),
               " "+w.description(opt),
               br
             )
