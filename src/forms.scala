@@ -7,7 +7,8 @@ import rapture.orm.Time._
 
 object Forms extends Widgets with Parsers {
 
-  class BasicForm(val name: Symbol, val params: Map[String, String] = Map()) { form =>
+  class BasicForm(val name: Symbol, val params: Map[String, String] = Map(),
+      val uploads: Map[String, Array[Byte]] = Map()) { form =>
     
     type Field[T] <: BasicField[T]
     
@@ -22,8 +23,15 @@ object Forms extends Widgets with Parsers {
       def name: Symbol
       def fieldName: String = name.name
       def paramValue: Option[String] = form.params.get(fieldName)
-      def value: Option[T] = if(parser.submitted(stringValue)) Some(parser.parse(stringValue)) else None
-      def stringValue: Option[String] = if(form.submitted) paramValue else if(cell == null) None else parser.serialize(cell())
+      
+      def value: Option[T] =
+        if(parser.submitted(stringValue)) Some(parser.parse(stringValue, dataValue)) else None
+      
+      def dataValue: Option[Array[Byte]] = form.uploads.get(fieldName)
+
+      def stringValue: Option[String] =
+        if(form.submitted) paramValue else if(cell == null) None else parser.serialize(cell())
+      
       def fieldValue: String = stringValue.getOrElse("")
       def apply(): T = value.get
       def parser: Parser[T]
@@ -104,19 +112,19 @@ object Forms extends Widgets with Parsers {
     type RenderType
     type FormPart
     type RenderedForm
-
     val formParts = new ListBuffer[FormPart]
 
-    def wrap[T, F <: Field[T], W <: Widget[T]](field: F, widget: W)(implicit renderer:
-        Renderer[T, F, W]): FormPart
+    def wrap[T, F <: Field[T], W <: Widget[T]](field: F, widget: W)
+        (implicit renderer: Renderer[T, F, W]): FormPart
+
     def content(fp: FormPart) = formParts += fp
 
     def render: RenderedForm
 
     // asInstanceOf[F] is here as an indirect consequence of compiler bug SI-6443
     trait RenderableField[T] { this: Field[T] =>
-      def as[F <: Field[T], W <: Widget[T]](w: W)(implicit renderer: Renderer[T, F, W]):
-          this.type = {
+      def as[F <: Field[T], W <: Widget[T]](w: W)(implicit renderer:
+          Renderer[T, F, W]): this.type = {
         formParts += wrap[T, F, W](this.asInstanceOf[F], w)(renderer)
         fields += this
         this
@@ -129,8 +137,9 @@ object Forms extends Widgets with Parsers {
   }
 
   abstract class WebForm(name: Symbol, params: Map[String, String] = Map(),
+      uploads: Map[String, Array[Byte]] = Map(),
       val method: HttpMethods.FormMethod = HttpMethods.Post, val action: Link = ^) extends
-      BasicForm(name, params) with RenderableForm with FieldLabels with Preprocessing with
+      BasicForm(name, params, uploads) with RenderableForm with FieldLabels with Preprocessing with
       FormValidation with FormHelp {
 
     class Field[T](val name: Symbol, val label: String, val cell: Cell[T], val parser: Parser[T],
@@ -153,6 +162,11 @@ object Forms extends Widgets with Parsers {
     implicit val stringRenderer = new Renderer[String, Field[String], StringInput[String]] {
       def render(f: Field[String], w: StringInput[String]): Html5.Element[Html5.Phrasing] =
         input(Html5.name -> f.name, Html5.value -> f.fieldValue)
+    }
+
+    implicit val uploadRenderer = new Renderer[FileUrl, Field[FileUrl], FileUploader[FileUrl]] {
+      def render(f: Field[FileUrl], w: FileUploader[FileUrl]): Html5.Element[Html5.Phrasing] =
+        input(Html5.name -> f.name, Html5.`type` -> Html5.file, Html5.value -> f.fieldValue)
     }
 
     implicit val checkboxRenderer = new Renderer[Boolean, Field[Boolean], Checkbox[Boolean]] {
@@ -200,14 +214,15 @@ object Forms extends Widgets with Parsers {
         td(renderer.render(field, widget))
       )
 
-    def render: RenderedForm = form(Html5.action -> action, Html5.method -> method)(
-      table(
-        tbody(
-          formParts.toList,
-          submitRow
+    def render: RenderedForm =
+      form(Html5.action -> action, Html5.method -> method)(
+        table(
+          tbody(
+            formParts.toList,
+            submitRow
+          )
         )
       )
-    )
    
     def submitButtonText = "Save"
 
@@ -225,25 +240,35 @@ object Forms extends Widgets with Parsers {
 
 trait Parsers {
   trait Parser[Value] {
-    def parse(value: Option[String]): Value
+    def parse(value: Option[String], data: Option[Array[Byte]] = None): Value
     def serialize(value: Value): Option[String]
     def submitted(value: Option[String]): Boolean = value.isDefined
   }
 
   implicit val StringParser = new Parser[String] {
-    def parse(s: Option[String]) = s.getOrElse("")
+    def parse(s: Option[String], data: Option[Array[Byte]] = None) = s.getOrElse("")
     def serialize(s: String): Option[String] = Some(s)
   }
 
   implicit val IntParser = new Parser[Int] {
-    def parse(s: Option[String]): Int = s.get.toInt
+    def parse(s: Option[String], data: Option[Array[Byte]] = None): Int = s.get.toInt
     def serialize(value: Int) = Some(value.toString)
   }
 
   implicit val BooleanParser = new Parser[Boolean] {
-    def parse(s: Option[String]) = s.isDefined
+    def parse(s: Option[String], data: Option[Array[Byte]] = None) = s.isDefined
     def serialize(value: Boolean) = if(value) Some("") else None
     override def submitted(value: Option[String]): Boolean = true
+  }
+
+  implicit val DataParser = new Parser[Array[Byte]] {
+    def parse(s: Option[String], data: Option[Array[Byte]] = None) = data.getOrElse(Array[Byte]())
+    def serialize(value: Array[Byte]) = Some("")
+  }
+
+  def enumParser(enum: Enumeration) = new Parser[enum.Value] {
+    def parse(s: Option[String], data: Option[Array[Byte]] = None) = enum(s.get.toInt)
+    def serialize(value: enum.Value) = Some(value.id.toString)
   }
 }
 

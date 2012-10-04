@@ -39,7 +39,7 @@ object Layout {
   }
 
   abstract class Page { page =>
-   
+
     def httpStatus = 200
 
     def doctype = "<!DOCTYPE html>"
@@ -50,7 +50,9 @@ object Layout {
     def lang: String = "en"
     def title: String
 
-    def links: List[Html5.Element[Html5.Metadata]] = stylesheets map { ss => Html5.link(Html5.rel -> "stylesheet", Html5.href -> ss.link)() }
+    def links: List[Html5.Element[Html5.Metadata]] =
+      stylesheets map { ss => Html5.link(Html5.rel -> "stylesheet", Html5.href -> ss.link)() }
+    
     def scripts: List[Html5.Element[Html5.Metadata]] = Nil
     def styles: List[Html5.Element[Html5.Metadata]] = Nil
     def metas: List[Html5.Element[Html5.Metadata]] = Nil
@@ -76,7 +78,7 @@ object Layout {
   }
 
   trait Bootstrap extends Page {
-    
+   
     def bootstrapLocation = Http / "twitter.github.com" / "bootstrap" / "1.4.0" / "bootstrap.min.css"
 
     override def links: List[Html5.Element[Html5.Metadata]] =
@@ -97,6 +99,7 @@ object Layout {
   }
   
   trait TinyMceForm { this: WebForm =>
+
     implicit val tinyMceEditorRenderer =
       new Renderer[String, Field[String], HtmlEditor[String]] {
         def render(f: Field[String], w: HtmlEditor[String]) =

@@ -11,5 +11,6 @@ trait Widgets {
   case class TextArea[+T](width: Int = 8, height: Int = 80) extends Widget[T]
   case class HtmlEditor[+T]() extends Widget[T]
   case class StringInput[+T]() extends Widget[T]
+  case class FileUploader[+T]() extends Widget[T]
 }
 
