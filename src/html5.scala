@@ -340,8 +340,8 @@ class Html5 extends ElementClasses with HtmlDefs with AttributeClasses with Seri
     override def falseValue = "off"
   }
   
-  val enctype = new AttributeKey[String, FormAttributes with InputAttributes with ButtonAttributes](
-      "enctype")
+  val enctype = new AttributeKey[MimeTypes.MimeType, FormAttributes with InputAttributes with
+      ButtonAttributes]("enctype")
   
   val method = new AttributeKey[HttpMethods.FormMethod, FormAttributes with InputAttributes with ButtonAttributes](
       "method")

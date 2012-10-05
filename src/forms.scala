@@ -144,8 +144,9 @@ object Forms extends Widgets with Parsers {
 
     class Field[T](val name: Symbol, val label: String, val cell: Cell[T], val parser: Parser[T],
         process: String => String, validate: String => List[String], val required: Boolean,
-        val help: String) extends BasicField[T] with RenderableField[T] with LabelledField with
-        PreprocessedField[T] with ValidatedField[T] with HelpField[T] {
+        val help: String, val needsMultipart: Boolean = false) extends BasicField[T] with
+        RenderableField[T] with LabelledField with PreprocessedField[T] with ValidatedField[T]
+        with HelpField[T] {
       def processString(s: String) = process(s)
       def validator = validate
     }
@@ -153,7 +154,8 @@ object Forms extends Widgets with Parsers {
     def field[T: Parser](name: Symbol, label: String, cell: Cell[T] = null,
         process: (String => String) = identity[String], validate: String => List[String] = { s =>
         Nil }, required: Boolean = false, help: String = "") =
-      new Field[T](name, label, cell, implicitly[Parser[T]], process, validate, required, help)
+      new Field[T](name, label, cell, implicitly[Parser[T]], process, validate, required, help,
+          implicitly[Parser[T]].needsMultipart)
     
     import Html5._
 
@@ -164,8 +166,8 @@ object Forms extends Widgets with Parsers {
         input(Html5.name -> f.name, Html5.value -> f.fieldValue)
     }
 
-    implicit val uploadRenderer = new Renderer[FileUrl, Field[FileUrl], FileUploader[FileUrl]] {
-      def render(f: Field[FileUrl], w: FileUploader[FileUrl]): Html5.Element[Html5.Phrasing] =
+    implicit val uploadRenderer = new Renderer[Array[Byte], Field[Array[Byte]], FileUploader[Array[Byte]]] {
+      def render(f: Field[Array[Byte]], w: FileUploader[Array[Byte]]): Html5.Element[Html5.Phrasing] =
         input(Html5.name -> f.name, Html5.`type` -> Html5.file, Html5.value -> f.fieldValue)
     }
 
@@ -214,8 +216,12 @@ object Forms extends Widgets with Parsers {
         td(renderer.render(field, widget))
       )
 
+    def encType: MimeTypes.MimeType =
+      if(fields.exists(_.needsMultipart)) MimeTypes.`multipart/form-data`
+      else MimeTypes.`application/x-www-form-urlencoded`
+
     def render: RenderedForm =
-      form(Html5.action -> action, Html5.method -> method)(
+      form(enctype -> encType, Html5.action -> action, Html5.method -> method)(
         table(
           tbody(
             formParts.toList,
@@ -243,6 +249,7 @@ trait Parsers {
     def parse(value: Option[String], data: Option[Array[Byte]] = None): Value
     def serialize(value: Value): Option[String]
     def submitted(value: Option[String]): Boolean = value.isDefined
+    def needsMultipart: Boolean = false
   }
 
   implicit val StringParser = new Parser[String] {
@@ -264,11 +271,13 @@ trait Parsers {
   implicit val DataParser = new Parser[Array[Byte]] {
     def parse(s: Option[String], data: Option[Array[Byte]] = None) = data.getOrElse(Array[Byte]())
     def serialize(value: Array[Byte]) = Some("")
+    override def needsMultipart: Boolean = true
   }
 
   def enumParser(enum: Enumeration) = new Parser[enum.Value] {
     def parse(s: Option[String], data: Option[Array[Byte]] = None) = enum(s.get.toInt)
     def serialize(value: enum.Value) = Some(value.id.toString)
   }
+
 }
 
