@@ -2,8 +2,7 @@ package rapture.html
 
 import rapture.io._
 import scala.collection.mutable.ListBuffer
-
-import rapture.orm.Time._
+import Time._
 
 object Forms extends Widgets with Parsers {
 
