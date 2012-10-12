@@ -103,7 +103,7 @@ trait HtmlDefs { this: Html5 =>
         Element[ThisType] = new Element[ThisType] {
       def serialize(sb: StringBuilder, n: Int, indent: Boolean) =
         doSerialize(block, name, attributes flatMap { a => if(a == null) None else Some(a.key -> a.value) } toMap, body, sb, n,
-            indent, hardClose)
+            indent)
     }
   }
 }

@@ -181,6 +181,13 @@ object Forms extends Widgets with Parsers {
         textarea(Html5.name -> f.name)(f.fieldValue)
     }
     
+    implicit def dropdownRenderer[T] = new Renderer[T, Field[T], Dropdown[T]] {
+      def render(f: Field[T], w: Dropdown[T]): Html5.Element[Html5.Phrasing] =
+        select(Html5.name -> f.name)(
+          w.options map { opt => option(value -> w.id(opt))(w.description(opt)) }
+        )
+    }
+    
     implicit def radioListRenderer[T] = new Renderer[T, Field[T], RadioList[T]] {
       def render(f: Field[T], w: RadioList[T]): Html5.Element[Html5.Phrasing] =
         span(style -> "display: inline-block")(
