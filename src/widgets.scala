@@ -1,7 +1,5 @@
 package rapture.html
 
-import scala.collection.mutable.ListMap
-
 trait Widgets {
   trait Widget[+T]
   
