@@ -1,3 +1,23 @@
+/**************************************************************************************************
+Rapture HTML Library
+Version 0.7.0
+
+The primary distribution site is
+
+  http://www.propensive.com/
+
+Copyright 2010-2012 Propensive Ltd.
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in
+compliance with the License. You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under the License is
+distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+implied. See the License for the specific language governing permissions and limitations under the
+License.
+***************************************************************************************************/
 package rapture.html
 
 import rapture.io._
@@ -33,7 +53,7 @@ object Forms extends Widgets with Parsers {
       
       def fieldValue: String = stringValue.getOrElse("")
       def apply(): T = value.get
-      def parser: Parser[T]
+      def parser: FieldParser[T]
       def cell: Cell[T]
       def save(): Unit = value foreach { c => if(cell == null) () else cell.update(c) }
     }
@@ -141,7 +161,7 @@ object Forms extends Widgets with Parsers {
       BasicForm(name, params, uploads) with RenderableForm with FieldLabels with Preprocessing with
       FormValidation with FormHelp {
 
-    class Field[T](val name: Symbol, val label: String, val cell: Cell[T], val parser: Parser[T],
+    class Field[T](val name: Symbol, val label: String, val cell: Cell[T], val parser: FieldParser[T],
         process: String => String, validate: String => List[String], val required: Boolean,
         val help: String, val needsMultipart: Boolean = false) extends BasicField[T] with
         RenderableField[T] with LabelledField with PreprocessedField[T] with ValidatedField[T]
@@ -150,11 +170,11 @@ object Forms extends Widgets with Parsers {
       def validator = validate
     }
 
-    def field[T: Parser](name: Symbol, label: String, cell: Cell[T] = null,
+    def field[T: FieldParser](name: Symbol, label: String, cell: Cell[T] = null,
         process: (String => String) = identity[String], validate: String => List[String] = { s =>
         Nil }, required: Boolean = false, help: String = "") =
-      new Field[T](name, label, cell, implicitly[Parser[T]], process, validate, required, help,
-          implicitly[Parser[T]].needsMultipart)
+      new Field[T](name, label, cell, implicitly[FieldParser[T]], process, validate, required, help,
+          implicitly[FieldParser[T]].needsMultipart)
     
     import Html5._
 
@@ -251,36 +271,37 @@ object Forms extends Widgets with Parsers {
 }
 
 trait Parsers {
-  trait Parser[Value] {
+  @annotation.implicitNotFound("Unable to use values of type ${Value} in form fields without a corresponding FieldParser.")
+  trait FieldParser[Value] {
     def parse(value: Option[String], data: Option[Array[Byte]] = None): Value
     def serialize(value: Value): Option[String]
     def submitted(value: Option[String]): Boolean = value.isDefined
     def needsMultipart: Boolean = false
   }
 
-  implicit val StringParser = new Parser[String] {
+  implicit val StringParser = new FieldParser[String] {
     def parse(s: Option[String], data: Option[Array[Byte]] = None) = s.getOrElse("")
     def serialize(s: String): Option[String] = Some(s)
   }
 
-  implicit val IntParser = new Parser[Int] {
+  implicit val IntParser = new FieldParser[Int] {
     def parse(s: Option[String], data: Option[Array[Byte]] = None): Int = s.get.toInt
     def serialize(value: Int) = Some(value.toString)
   }
 
-  implicit val BooleanParser = new Parser[Boolean] {
+  implicit val BooleanParser = new FieldParser[Boolean] {
     def parse(s: Option[String], data: Option[Array[Byte]] = None) = s.isDefined
     def serialize(value: Boolean) = if(value) Some("") else None
     override def submitted(value: Option[String]): Boolean = true
   }
 
-  implicit val DataParser = new Parser[Array[Byte]] {
+  implicit val DataParser = new FieldParser[Array[Byte]] {
     def parse(s: Option[String], data: Option[Array[Byte]] = None) = data.getOrElse(Array[Byte]())
     def serialize(value: Array[Byte]) = Some("")
     override def needsMultipart: Boolean = true
   }
 
-  def enumParser(enum: Enumeration) = new Parser[enum.Value] {
+  def enumParser(enum: Enumeration) = new FieldParser[enum.Value] {
     def parse(s: Option[String], data: Option[Array[Byte]] = None) = enum(s.get.toInt)
     def serialize(value: enum.Value) = Some(value.id.toString)
   }
