@@ -121,8 +121,8 @@ object Layout {
   trait TinyMceForm { this: WebForm =>
 
     implicit val tinyMceEditorRenderer =
-      new Renderer[String, Field[String], HtmlEditor[String]] {
-        def render(f: Field[String], w: HtmlEditor[String]) =
+      new Renderer[String, Field[String], HtmlEditor] {
+        def render(f: Field[String], w: HtmlEditor) =
           textarea(style -> "width: 100%", Html5.name -> f.name, cls -> "mceEditorCustom")(raw(f.fieldValue))
       }
   }

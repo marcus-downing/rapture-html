@@ -21,18 +21,18 @@ License.
 package rapture.html
 
 trait Widgets {
-  trait Widget[+T]
+  trait Widget
   
-  case class Dropdown[T](options: List[T])(val id: T => String = ((t: Any) => t.toString),
-      val description: T => String = ((t: Any) => t.toString)) extends Widget[T]
+  case class Dropdown[T](options: List[T])(val id: T => String = ((t: Any) =>
+      t.toString), val description: T => String = ((t: Any) => t.toString)) extends Widget
   
   case class RadioList[T](options: List[T])(val id: T => String = ((t: Any) => t.toString),
-      val description: T => String = ((t: Any) => t.toString)) extends Widget[T]
+      val description: T => String = ((t: Any) => t.toString)) extends Widget
   
-  case class TextArea[+T](width: Int = 8, height: Int = 80) extends Widget[T]
-  case class HtmlEditor[+T]() extends Widget[T]
-  case class StringInput[+T]() extends Widget[T]
-  case class FileUploader[+T]() extends Widget[T]
-  case class Checkbox[+T]() extends Widget[T]
+  case class TextArea(width: Int = 8, height: Int = 80) extends Widget
+  case class HtmlEditor() extends Widget
+  case class StringInput() extends Widget
+  case class FileUploader() extends Widget
+  case class Checkbox() extends Widget
 }
 

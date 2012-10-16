@@ -133,7 +133,7 @@ object Forms extends Widgets with Parsers {
     type RenderedForm
     val formParts = new ListBuffer[FormPart]
 
-    def wrap[T, F <: Field[T], W <: Widget[T]](field: F, widget: W)
+    def wrap[T, F <: Field[T], W <: Widget](field: F, widget: W)
         (implicit renderer: Renderer[T, F, W]): FormPart
 
     def content(fp: FormPart) = formParts += fp
@@ -142,7 +142,7 @@ object Forms extends Widgets with Parsers {
 
     // asInstanceOf[F] is here as an indirect consequence of compiler bug SI-6443
     trait RenderableField[T] { this: Field[T] =>
-      def as[F <: Field[T], W <: Widget[T]](w: W)(implicit renderer:
+      def as[F <: Field[T], W <: Widget](w: W)(implicit renderer:
           Renderer[T, F, W]): this.type = {
         formParts += wrap[T, F, W](this.asInstanceOf[F], w)(renderer)
         fields += this
@@ -150,7 +150,7 @@ object Forms extends Widgets with Parsers {
       }
     }
 
-    trait Renderer[T, -F <: RenderableField[T], -W <: Widget[T]] {
+    trait Renderer[T, -F <: RenderableField[T], -W <: Widget] {
       def render(f: F, w: W): RenderType
     }
   }
@@ -180,36 +180,36 @@ object Forms extends Widgets with Parsers {
 
     type RenderType = Element[Phrasing]
 
-    implicit val stringRenderer = new Renderer[String, Field[String], StringInput[String]] {
-      def render(f: Field[String], w: StringInput[String]): Html5.Element[Html5.Phrasing] =
+    implicit val stringRenderer = new Renderer[String, Field[String], StringInput] {
+      def render(f: Field[String], w: StringInput): Html5.Element[Html5.Phrasing] =
         input(Html5.name -> f.name, Html5.value -> f.fieldValue)
     }
 
-    implicit val uploadRenderer = new Renderer[Array[Byte], Field[Array[Byte]], FileUploader[Array[Byte]]] {
-      def render(f: Field[Array[Byte]], w: FileUploader[Array[Byte]]): Html5.Element[Html5.Phrasing] =
+    implicit val uploadRenderer = new Renderer[Array[Byte], Field[Array[Byte]], FileUploader] {
+      def render(f: Field[Array[Byte]], w: FileUploader): Html5.Element[Html5.Phrasing] =
         input(Html5.name -> f.name, Html5.`type` -> Html5.file, Html5.value -> f.fieldValue)
     }
 
-    implicit val checkboxRenderer = new Renderer[Boolean, Field[Boolean], Checkbox[Boolean]] {
-      def render(f: Field[Boolean], w: Checkbox[Boolean]): Html5.Element[Html5.Phrasing] =
+    implicit val checkboxRenderer = new Renderer[Boolean, Field[Boolean], Checkbox] {
+      def render(f: Field[Boolean], w: Checkbox): Html5.Element[Html5.Phrasing] =
         input(Html5.`type` -> checkbox, Html5.name -> f.name, if(f.value.getOrElse(false))
             Some(checked) else None)
     }
 
-    implicit val textareaRenderer = new Renderer[String, Field[String], TextArea[String]] {
-      def render(f: Field[String], w: TextArea[String]): Html5.Element[Html5.Phrasing] =
+    implicit val textareaRenderer = new Renderer[String, Field[String], TextArea] {
+      def render(f: Field[String], w: TextArea): Html5.Element[Html5.Phrasing] =
         textarea(Html5.name -> f.name)(f.fieldValue)
     }
     
-    implicit def dropdownRenderer[T] = new Renderer[T, Field[T], Dropdown[T]] {
-      def render(f: Field[T], w: Dropdown[T]): Html5.Element[Html5.Phrasing] =
+    implicit def dropdownRenderer[T, Q] = new Renderer[T, Field[T], Dropdown[Q]] {
+      def render(f: Field[T], w: Dropdown[Q]): Html5.Element[Html5.Phrasing] =
         select(Html5.name -> f.name)(
           w.options map { opt => option(value -> w.id(opt))(w.description(opt)) }
         )
     }
     
-    implicit def radioListRenderer[T] = new Renderer[T, Field[T], RadioList[T]] {
-      def render(f: Field[T], w: RadioList[T]): Html5.Element[Html5.Phrasing] =
+    implicit def radioListRenderer[T, Q] = new Renderer[T, Field[T], RadioList[Q]] {
+      def render(f: Field[T], w: RadioList[Q]): Html5.Element[Html5.Phrasing] =
         span(style -> "display: inline-block")(
           w.options flatMap { opt => List(
             span(
@@ -232,7 +232,7 @@ object Forms extends Widgets with Parsers {
 
     def hideLabels = false
 
-    def wrap[T, F <: Field[T], W <: Widget[T]](field: F, widget: W)
+    def wrap[T, F <: Field[T], W <: Widget](field: F, widget: W)
         (implicit renderer: Renderer[T, F, W]): FormPart =
       tr(
         if(hideLabels) Nil else List(
