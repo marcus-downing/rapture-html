@@ -21,6 +21,7 @@ License.
 package rapture.html
 
 import rapture.io._
+import Base._
 
 object Layout {
 
@@ -92,8 +93,7 @@ object Layout {
       val sb = new StringBuilder
       sb.append(doctype)
       sb.append(document.toString)
-      // FIXME: StringCharReader specified explicitly to work around compiler bug
-      sb.toString.input[Char](StringCharReader)
+      sb.toString.input[Char]
     }
   }
 

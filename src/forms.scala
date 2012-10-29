@@ -21,6 +21,8 @@ License.
 package rapture.html
 
 import rapture.io._
+import Base._
+
 import scala.collection.mutable.ListBuffer
 import Time._
 
@@ -74,40 +76,67 @@ object Forms extends Widgets with Parsers {
     type Field[T] <: ValidatedField[T]
     trait ValidatedField[T] { this: BasicField[T] =>
       lazy val validationIssues: List[String] =
-        if(!submitted) Nil else stringValue.map(validator).getOrElse(Nil)
+        if(!submitted) Nil else validator(stringValue)
       def validated: Boolean = validationIssues.isEmpty
-      def validator: String => List[String]
+      def validator: Option[String] => List[String]
       def required: Boolean
     }
  
     // String validators
 
-    val validUrl = { s: String => if(s.matches("\\b(https?|ftp)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a"+
-        "-zA-Z0-9+&@#/%=~_|]")) Nil else List("Please enter a valid URL") }
+    // FIXME: Reformat these lines
+    val validUrl: Option[String] => List[String] = {
+      case None => Nil
+      case Some(s) => if(s.matches("\\b(https?|ftp)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#"+
+          "/%=~_|]")) Nil else List("Please enter a valid URL")
+    }
 
-    val validPhoneNumber = { s: String => if(s.matches("""^[+\- ()0-9]*$""")) Nil else List("Pleas"+
-        "e enter a valid telephone number") }
+    val validPhoneNumber: Option[String] => List[String] = {
+      case Some(s) => if(s.matches("""^[+\- ()0-9]*$""")) Nil else List("Please enter a valid tele"+
+          "phone number")
+      case None => Nil
+    }
     
-    val validEmailAddress = { s: String => if(s.matches("""^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+"+
-        "(\.[a-z0-9-]+)*(\.[a-z]{2,4})$""")) Nil else List("Please enter a valid email address") }
+    val validEmailAddress: Option[String] => List[String] = {
+      case Some(s) => if(s.matches("""^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$""")) Nil else List("Please enter a valid email address")
+      case None => Nil
+    }
     
-    val optValidEmailAddress = { s: String => if(s.matches("""^([_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-"+
+    val optValidEmailAddress: Option[String] => List[String] = {
+      case Some(s) => if(s.matches("""^([_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-"+
         "9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4}))?$""")) Nil else List("Please enter a valid email addre"+
-        "ss") }
+        "ss")
+      case None => Nil
+    }
     
-    val validDateTime = { s: String => if(s.matches("[0-9][0-9]\\/[0-9][0-9]\\/[0-9][0-9] [0-9][0-"+
+    val validDateTime: Option[String] => List[String] = {
+      case Some(s) => if(s.matches("[0-9][0-9]\\/[0-9][0-9]\\/[0-9][0-9] [0-9][0-"+
         "9]:[0-9][0-9]:[0-9][0-9]")) Nil else List("Please enter a valid date, in the format DD/MM"+
-        "/YY hh:mm:ss.") }
+        "/YY hh:mm:ss.")
+      case None => Nil
+    }
     
-    val notEmpty = { s: String => if(s.isEmpty) List("Value is required and can't be empty.") else
-        Nil }
+    val notEmpty: Option[String] => List[String] = {
+      case Some(s) => if(s.isEmpty) List("Value is required and can't be empty.") else Nil
+      case None => Nil
+    }
     
-    val isSlug = { s: String => if(!s.matches("[a-z0-9]*")) List("Value can only contain lower-cas"+
-        "e alphanumeric characters.") else Nil }
+    val isSlug: Option[String] => List[String] = {
+      case Some(s) => if(!s.matches("[a-z0-9]*")) List("Value can only contain lower-case alphanum"+
+         "eric characters.") else Nil
+      case None => Nil
+    }
+   
+    val isChecked: Option[String] => List[String] = {
+      case Some(s) => Nil
+      case None => List("You must check this field to continue.")
+    }
     
-    def notDuplicate(xs: List[String]) = { s: String => if(xs contains s) List("This value is not "+
-        "unique. Please choose something different.") else Nil }
-  
+    def notDuplicate(xs: List[String]): Option[String] => List[String] = {
+      case Some(s) => if(xs contains s) List("This value is not unique. Please choose something di"+
+          "fferent.") else Nil
+      case None => Nil
+    }
   }
 
   trait FormHelp { this: BasicForm =>
@@ -162,7 +191,7 @@ object Forms extends Widgets with Parsers {
       FormValidation with FormHelp {
 
     class Field[T](val name: Symbol, val label: String, val cell: Cell[T], val parser: FieldParser[T],
-        process: String => String, validate: String => List[String], val required: Boolean,
+        process: String => String, validate: Option[String] => List[String], val required: Boolean,
         val help: String, val needsMultipart: Boolean = false) extends BasicField[T] with
         RenderableField[T] with LabelledField with PreprocessedField[T] with ValidatedField[T]
         with HelpField[T] {
@@ -171,7 +200,7 @@ object Forms extends Widgets with Parsers {
     }
 
     def field[T: FieldParser](name: Symbol, label: String, cell: Cell[T] = null,
-        process: (String => String) = identity[String], validate: String => List[String] = { s =>
+        process: (String => String) = identity[String], validate: Option[String] => List[String] = { s =>
         Nil }, required: Boolean = false, help: String = "") =
       new Field[T](name, label, cell, implicitly[FieldParser[T]], process, validate, required, help,
           implicitly[FieldParser[T]].needsMultipart)
@@ -192,8 +221,8 @@ object Forms extends Widgets with Parsers {
 
     implicit val checkboxRenderer = new Renderer[Boolean, Field[Boolean], Checkbox] {
       def render(f: Field[Boolean], w: Checkbox): Html5.Element[Html5.Phrasing] =
-        input(Html5.`type` -> checkbox, Html5.name -> f.name, if(f.value.getOrElse(false))
-            Some(checked) else None)
+        input(Html5.`type` -> checkbox, Html5.value -> "1", Html5.name -> f.name,
+            if(f.value.getOrElse(false)) Some(checked) else None)
     }
 
     implicit val textareaRenderer = new Renderer[String, Field[String], TextArea] {

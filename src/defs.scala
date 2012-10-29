@@ -19,8 +19,9 @@ implied. See the License for the specific language governing permissions and lim
 License.
 ***************************************************************************************************/
 package rapture.html
-import rapture.io.{log, Zone, Link, HttpMethods, MimeTypes}
 
+import rapture.io._
+import Base._
 import language.implicitConversions
 
 // This is a mess.
