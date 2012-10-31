@@ -482,6 +482,7 @@ class Html5 extends ElementClasses with HtmlDefs with AttributeClasses with Seri
 
   // Not sure if these should be here
   val onclick = new AttributeKey[String, GlobalAttributes]("onclick")
+  val onchange = new AttributeKey[String, GlobalAttributes]("onchange")
   val onmouseover = new AttributeKey[String, GlobalAttributes]("onmouseover")
   val onmouseout = new AttributeKey[String, GlobalAttributes]("onmouseout")
 
