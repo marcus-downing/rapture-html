@@ -21,7 +21,6 @@ License.
 package rapture.html
 
 import rapture.io._
-import Base._
 
 // Implementation of draft spec from about 2009. Not up to date.
 class Html5 extends ElementClasses with HtmlDefs with AttributeClasses with Serialization {

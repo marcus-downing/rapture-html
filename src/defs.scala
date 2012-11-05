@@ -21,7 +21,6 @@ License.
 package rapture.html
 
 import rapture.io._
-import Base._
 import language.implicitConversions
 
 // This is a mess.

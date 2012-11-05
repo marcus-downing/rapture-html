@@ -21,7 +21,6 @@ License.
 package rapture.html
 
 import rapture.io._
-import Base._
 
 import scala.collection.mutable.ListBuffer
 import Time._
