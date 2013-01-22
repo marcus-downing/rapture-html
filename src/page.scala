@@ -47,7 +47,7 @@ object Layout {
         "jquery-ui.min.js"
     
     override def scripts: List[Html5.Element[Html5.Metadata]] =
-      Html5.script(Html5.scriptType -> `text/javascript`, Html5.src -> jQueryUiLocation) :: super.scripts
+      Html5.script(Html5.scriptType -> `text/javascript`, Html5.src -> Link(jQueryUiLocation.schemeSpecificPart)) :: super.scripts
   }
 
   trait JQuery extends Page {
@@ -55,7 +55,7 @@ object Layout {
     def jQueryLocation: HttpUrl = Http / "ajax.googleapis.com" / "ajax" / "libs" / "jquery" / "1.7.2" / "jquery.min.js"
 
     override def scripts: List[Html5.Element[Html5.Metadata]] =
-      Html5.script(Html5.scriptType -> `text/javascript`, Html5.src -> jQueryLocation) :: super.scripts
+      Html5.script(Html5.scriptType -> `text/javascript`, Html5.src -> Link(jQueryLocation.schemeSpecificPart)) :: super.scripts
   }
 
   abstract class Page { page =>

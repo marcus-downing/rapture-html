@@ -111,7 +111,8 @@ trait HtmlDefs { this: Html5 =>
   }
 
   class Tag[ChildType <: ElementType, ThisType <: ElementType, AT <: AttributeType]
-      (val name: String, block: Boolean = true, hardClose: Boolean = false) {
+      (val name: String, block: Boolean = true, hardClose: Boolean = false,
+      dontClose: Boolean = false) {
     
     def apply(attributes: Attribute[AT]*) = new AttributedElement[ThisType, ChildType] {
       def apply(body: Element[ChildType]*): Element[ThisType] =
@@ -121,9 +122,10 @@ trait HtmlDefs { this: Html5 =>
 
     def build(attributes: Seq[Attribute[AT]], body: Seq[Element[ChildType]]):
         Element[ThisType] = new Element[ThisType] {
+      val dc = dontClose
       def serialize(sb: StringBuilder, n: Int, indent: Boolean) =
         doSerialize(block, name, attributes flatMap { a => if(a == null) None else Some(a.key -> a.value) } toMap, body, sb, n,
-            indent)
+            indent, dontClose = dc)
     }
   }
 }

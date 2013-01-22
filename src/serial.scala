@@ -23,7 +23,8 @@ package rapture.html
 trait Serialization { this: Html5 =>
 
   def doSerialize(block: Boolean, name: String, attributes: Map[String, String],
-      body: Seq[Element[_]], sb: StringBuilder, n: Int, indent: Boolean, hardClose: Boolean = true) =
+      body: Seq[Element[_]], sb: StringBuilder, n: Int, indent: Boolean, hardClose: Boolean = true,
+      dontClose: Boolean = false) =
     if(block) {
       if(!indent) sb.append("\n")
       sb.append("  "*n)
@@ -44,7 +45,8 @@ trait Serialization { this: Html5 =>
             sb.append("></")
             sb.append(name)
             sb.append(">")
-          } else sb.append("/>")
+          } else if(dontClose) sb.append(">")
+          else sb.append("/>")
         case h :: t =>
           sb.append(">\n")
           h.serialize(sb, n + 1, true)
