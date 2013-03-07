@@ -226,7 +226,7 @@ object Forms extends Widgets with Parsers {
 
     implicit val textareaRenderer = new Renderer[String, Field[String], TextArea] {
       def render(f: Field[String], w: TextArea): Html5.Element[Html5.Phrasing] =
-        textarea(Html5.name -> f.name)(f.fieldValue)
+        textarea(Html5.name -> f.name, w.maxLength.map(Html5.maxlength -> _))(f.fieldValue)
     }
     
     implicit def dropdownRenderer[T, Q] = new Renderer[T, Field[T], Dropdown[Q]] {

@@ -29,7 +29,7 @@ trait Widgets {
   case class RadioList[T](options: List[T])(val id: T => String = ((t: Any) => t.toString),
       val description: T => String = ((t: Any) => t.toString)) extends Widget
   
-  case class TextArea(width: Int = 8, height: Int = 80) extends Widget
+  case class TextArea(width: Int = 8, height: Int = 80, maxLength: Option[Int] = None) extends Widget
   case class HtmlEditor() extends Widget
   case class StringInput() extends Widget
   case class FileUploader() extends Widget
