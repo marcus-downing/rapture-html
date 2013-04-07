@@ -188,6 +188,11 @@ object Forms extends Widgets with Parsers {
       val method: HttpMethods.FormMethod = HttpMethods.Post, val action: Link = ^) extends
       BasicForm(name, params, uploads) with RenderableForm with FieldLabels with Preprocessing with
       FormValidation with FormHelp {
+    
+    def encType: MimeTypes.MimeType =
+      if(fields.exists(_.needsMultipart)) MimeTypes.`multipart/form-data`
+      else MimeTypes.`application/x-www-form-urlencoded`
+
 
     class Field[T](val name: Symbol, val label: String, val cell: Cell[T], val parser: FieldParser[T],
         process: String => String, validate: Option[String] => List[String], val required: Boolean,
@@ -269,10 +274,6 @@ object Forms extends Widgets with Parsers {
         ),
         td(renderer.render(field, widget))
       )
-
-    def encType: MimeTypes.MimeType =
-      if(fields.exists(_.needsMultipart)) MimeTypes.`multipart/form-data`
-      else MimeTypes.`application/x-www-form-urlencoded`
 
     def render: RenderedForm =
       form(enctype -> encType, Html5.action -> action, Html5.method -> method)(
