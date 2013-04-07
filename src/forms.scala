@@ -254,6 +254,11 @@ object Forms extends Widgets with Parsers {
           ) }
         )
     }
+
+    implicit val hiddenRenderer = new Renderer[String, Field[String], Hidden] {
+      def render(f: Field[String], w: Hidden): Html5.Element[Html5.Phrasing] =
+        input(Html5.`type` -> Html5.hidden, Html5.value -> f.fieldValue)
+    }
   }
 
   trait TabularLayout { this: (WebForm with TabularLayout) =>

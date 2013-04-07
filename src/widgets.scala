@@ -34,5 +34,6 @@ trait Widgets {
   case class StringInput() extends Widget
   case class FileUploader() extends Widget
   case class Checkbox() extends Widget
+  case class Hidden() extends Widget
 }
 
