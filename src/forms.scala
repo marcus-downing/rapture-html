@@ -225,8 +225,11 @@ object Forms extends Widgets with Parsers {
 
     implicit val checkboxRenderer = new Renderer[Boolean, Field[Boolean], Checkbox] {
       def render(f: Field[Boolean], w: Checkbox): Html5.Element[Html5.Phrasing] =
-        input(Html5.`type` -> checkbox, Html5.value -> "1", Html5.name -> f.name,
-            if(f.value.getOrElse(false)) Some(checked) else None)
+        label(
+          input(Html5.`type` -> checkbox, Html5.value -> "1", Html5.name -> f.name,
+              if(f.value.getOrElse(false)) Some(checked) else None),
+          " "+f.label
+        )
     }
 
     implicit val textareaRenderer = new Renderer[String, Field[String], TextArea] {
